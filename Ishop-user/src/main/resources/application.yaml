@@ -1,5 +1,5 @@
 server:
-  port: 8082
+  port: 8086
 spring:
   application:
     name: user-service
@@ -11,8 +11,4 @@ spring:
 feign:
   circuitbreaker:
     enabled: true
-eureka:
-  client:
-    # 跟上面一样，需要指向Eureka服务端地址，这样才能进行注册
-    service-url:
-      defaultZone: http://localhost:8888/eureka
+

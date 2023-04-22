@@ -1,5 +1,5 @@
 server:
-  port: 8082
+  port: 8084
 spring:
   application:
     name: security-service
@@ -8,11 +8,11 @@ spring:
     url: jdbc:mysql://localhost:3306/ssmtest
     username: root
     password: 575888hmq
+  cloud:
+    nacos:
+      discovery:
+        # 配置Nacos注册中心地址
+        server-addr: localhost:8848
 feign:
   circuitbreaker:
     enabled: true
-eureka:
-  client:
-    # 跟上面一样，需要指向Eureka服务端地址，这样才能进行注册
-    service-url:
-      defaultZone: http://localhost:8888/eureka
