@@ -2,7 +2,8 @@ package com.Ishop.security.config;
 
 
 import com.Ishop.security.filter.JwtAuthenticationTokenFilter;
-import com.example.ishop.service.serviceImpl.UserAuthService;
+
+import com.Ishop.security.service.serviceImpl.UserAuthService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
