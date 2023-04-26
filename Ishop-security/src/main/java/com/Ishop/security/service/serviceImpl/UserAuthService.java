@@ -22,7 +22,7 @@ public class UserAuthService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 
-        User data = userMapper.selectOne(new QueryWrapper<User>().eq("username",username));
+        User data = userMapper.selectOne(new QueryWrapper<User>().eq("name",username));
 
         System.out.println("接收user信息：" + data);
         System.out.println("接收的username为："+username);
@@ -31,7 +31,7 @@ public class UserAuthService implements UserDetailsService {
         }
 
         return org.springframework.security.core.userdetails.User
-                .withUsername(data.getUsername())
+                .withUsername(data.getName())
                 .password(data.getPassword())
                 .roles("user")
                 .build();

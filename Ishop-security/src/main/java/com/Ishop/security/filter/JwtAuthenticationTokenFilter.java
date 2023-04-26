@@ -3,7 +3,7 @@ package com.Ishop.security.filter;
 
 
 import com.Ishop.common.util.RedisUtils;
-import com.Ishop.common.util.TokenUtil;
+import com.Ishop.security.util.TokenUtil;
 import io.jsonwebtoken.Claims;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -12,7 +12,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import javax.annotation.Resource;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -28,8 +27,7 @@ import java.util.Objects;
 @Component
 public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
 
-    @Resource
-    RedisUtils redisUtils;
+
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -56,7 +54,7 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
         // 从 redis 中获取用户信息
         String redisKey = "login:" + uesrId;
 
-        UserDetails user = (UserDetails) redisUtils.get(redisKey);
+        UserDetails user = (UserDetails) RedisUtils.get(redisKey);
 
         if (Objects.isNull(user)) {
             throw new RuntimeException("用户未登录");

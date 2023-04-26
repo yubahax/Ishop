@@ -1,7 +1,10 @@
-package com.Ishop.common.util;
+package com.Ishop.security.util;
 
 import io.jsonwebtoken.*;
+import org.apache.commons.codec.binary.Base64;
 
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -13,12 +16,13 @@ import java.util.Objects;
 public class TokenUtil {
     //注入配置文件的值
 
-    private static final String SECRET_KEY = "yuba";
+    private static final String SECRET_KEY = "lbwnb";
 
     private static final long  EXPIRATION_TIME = 1800;
 
     /**
      * 使用uid，生成token
+     *
      */
     public static String generateToken(int uid) {
         Map<String, Object> map = new HashMap<>(2);
@@ -40,7 +44,8 @@ public class TokenUtil {
                 // 设置信息
                 .setClaims(map)
                 //加密密钥
-                .signWith(SignatureAlgorithm.HS512, SECRET_KEY)
+                .signWith(SignatureAlgorithm.HS256,SECRET_KEY)
+//                .signWith(SignatureAlgorithm.HS512, SECRET_KEY)
                 // token保留的时间 当前时间+ 三个小时
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME * 1000))
                 .compact();
@@ -54,16 +59,15 @@ public class TokenUtil {
      * @return
      */
     public static Claims getTokenBody(String token) {
-       try {
+
+//           SecretKey key = generalKey();
            return Jwts.parser()
-                   .setSigningKey(SECRET_KEY)
+//                   .setSigningKey(SECRET_KEY)
                    //解密密钥
                    .parseClaimsJws(token)
                    .getBody();
                    //密文
-       } catch (Exception e) {
-           return null;
-       }
+
     }
 
     /**
