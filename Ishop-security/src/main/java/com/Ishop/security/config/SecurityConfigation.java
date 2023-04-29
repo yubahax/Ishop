@@ -42,7 +42,7 @@ public class SecurityConfigation extends WebSecurityConfigurerAdapter {
                 .loginProcessingUrl("/do")
                 .permitAll();    //使用表单登录
 
-        http.addFilterBefore(jwtAuthenticationTokenFilter, UsernamePasswordAuthenticationFilter.class);
+//        http.addFilterBefore(jwtAuthenticationTokenFilter, UsernamePasswordAuthenticationFilter.class);
     }
 
     @Bean("ok")

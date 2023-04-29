@@ -3,6 +3,12 @@ server:
 spring:
   application:
     name: rabbitmq-service
+  rabbitmq:
+    addresses: 127.0.0.1
+    username: guest
+    password: guest
+    virtual-host: /test
+    port: 15672
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/ssmtest
@@ -16,4 +22,6 @@ spring:
 feign:
   circuitbreaker:
     enabled: true
+
+
 

@@ -1,8 +1,10 @@
 package com.Ishop.common.util;
 
 import org.springframework.stereotype.Component;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 @Component
@@ -12,6 +14,9 @@ public class ParamVail {
             Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE);
 
     public static boolean vailNumber(int num) {
+        if (Objects.isNull(num)) {
+            return false;
+        }
         String str = String.valueOf(num);
         if (StringUtils.hasText(str)) {
             String regex = "^[0-9\u4E00-\u9FA5]+$";

@@ -5,14 +5,19 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.io.Serializable;
+import java.util.Date;
 
 @Data
 @AllArgsConstructor
-public class User {
+@NoArgsConstructor
+public class User implements Serializable {
     @TableId(type = IdType.AUTO)
-    private Integer id;
+    private Long id;
 
-    @TableField("name")
+    @TableField("username")
     private String name;
 
     @TableField("password")
@@ -27,9 +32,37 @@ public class User {
     @TableField("addtime")
     private String addtime;
 
+    @TableField("phone")
+    private String phone;
 
-    public User() {
+    @TableField("email")
+    private String email;
 
-    }
+    @TableField("created")
+    private String created;
+
+    @TableField("updated")
+    private String updated;
+
+    @TableField("sex")
+    private String sex;
+
+    @TableField("address")
+    private String address;
+
+    @TableField("state")
+    private Integer state;
+
+    @TableField("description")
+    private String description;
+
+    @TableField("role_id")
+    private Integer roleId;
+
+    @TableField("file")
+    private String file;
+
+    @TableField("rolename")
+    private String roleNames;
 
 }

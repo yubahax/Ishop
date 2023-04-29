@@ -1,15 +1,10 @@
 package com.Ishop.common.util;
 
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
@@ -54,11 +49,17 @@ public class RedisUtils {
         }
         return false;
     }
+
+    /**
+     * 根据token获取用户username
+     */
     public static String getName(){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         // 认证信息可能为空，因此需要进行判断。
         if (Objects.nonNull(authentication)) {
             Object principal = authentication.getPrincipal();
+        } else {
+            return "未认证用户！";
         }
         return (String) authentication.getPrincipal();
     }
@@ -83,7 +84,7 @@ public class RedisUtils {
 
 
     public static boolean hasKey(String key){
-        return REDIS_TEMPLATE.hasKey(key);
+        return Boolean.TRUE.equals(REDIS_TEMPLATE.hasKey(key));
     }
 
     public static   boolean delSet(String key,Object ... var){
