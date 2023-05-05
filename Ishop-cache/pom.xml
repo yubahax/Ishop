@@ -9,7 +9,7 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>Ishop-admin</artifactId>
+    <artifactId>Ishop-cache</artifactId>
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>

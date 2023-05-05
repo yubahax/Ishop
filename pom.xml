@@ -12,9 +12,10 @@
         <module>Ishop-common</module>
         <module>Ishop-security</module>
         <module>Ishop-user</module>
-        <module>Ishop-admin</module>
+        <module>Ishop-cache</module>
         <module>Ishop-store</module>
         <module>Ishop-rabbitmq</module>
+        <module>Ishop-business</module>
     </modules>
     <properties>
         <java.version>1.8</java.version>
