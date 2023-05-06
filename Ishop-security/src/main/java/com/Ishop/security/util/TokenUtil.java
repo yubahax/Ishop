@@ -34,6 +34,16 @@ public class TokenUtil {
 
     }
 
+    public static String generateToken(Long uid) {
+        Map<String, Object> map = new HashMap<>(2);
+        // //内容
+//        map.put("username", user.getName());
+        map.put("uid",uid);
+        map.put("created", new Date());
+        return generateJwt(map);
+
+    }
+
     /**
      * 根据荷载信息生成token
      * @param map

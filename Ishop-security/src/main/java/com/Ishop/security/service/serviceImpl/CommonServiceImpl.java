@@ -1,7 +1,8 @@
 package com.Ishop.security.service.serviceImpl;
 
 import com.Ishop.common.entity.User;
-import com.Ishop.common.util.RedisUtils;
+
+import com.Ishop.common.util.util.RedisUtils;
 import com.Ishop.security.util.TokenUtil;
 import com.Ishop.security.service.CommonServcie;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -36,7 +37,7 @@ public class CommonServiceImpl implements CommonServcie {
         }
         // 3. 如果认证通过了，使用 userId 生成一个 jwt，jwt 存入 返回体 返回
         UserDetails loginUser = (UserDetails) authenticate.getPrincipal();
-        int uid = mapper.selectOne(new QueryWrapper<User>().select("uid").eq("name",loginUser.getUsername())).getId();
+        Long uid = mapper.selectOne(new QueryWrapper<User>().select("uid").eq("name",loginUser.getUsername())).getId();
 //        User user1 = new User(uid,loginUser.getUsername(),loginUser.getPassword());
 //        String userId = loginUser.g().getId().toString();
         String jwt = TokenUtil.generateToken(uid);

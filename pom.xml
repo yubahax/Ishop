@@ -16,6 +16,8 @@
         <module>Ishop-store</module>
         <module>Ishop-rabbitmq</module>
         <module>Ishop-business</module>
+        <module>Ishop-common/Ishop-common-pojo</module>
+        <module>Ishop-common/Ishop-common-util</module>
     </modules>
     <properties>
         <java.version>1.8</java.version>

@@ -1,6 +1,6 @@
 package com.Ishop.security.config;
 
-import com.Ishop.security.filter.JwtAuthenticationTokenFilter;
+
 import com.Ishop.security.service.serviceImpl.UserAuthService;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -24,8 +24,8 @@ public class SecurityConfigation extends WebSecurityConfigurerAdapter {
     @Resource
     UserAuthService userAuthService;
 
-    @Resource
-    JwtAuthenticationTokenFilter jwtAuthenticationTokenFilter;
+//    @Resource
+//    JwtAuthenticationTokenFilter jwtAuthenticationTokenFilter;
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
