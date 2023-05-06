@@ -22,26 +22,12 @@ public class User implements Serializable {
     @TableField("password")
     private String password;
 
-    @TableField("role")
-    private String role;
-
-    @TableField("isalive")
-    private Integer isalive;
-
-    @TableField("addtime")
-    private String addtime;
-
     @TableField("phone")
     private String phone;
 
     @TableField("email")
     private String email;
 
-    @TableField("created")
-    private String created;
-
-    @TableField("updated")
-    private String updated;
 
     @TableField("sex")
     private String sex;
@@ -61,7 +47,10 @@ public class User implements Serializable {
     @TableField("file")
     private String file;
 
-    @TableField("rolename")
-    private String roleNames;
+    @TableField("created")
+    private String created;
+
+    @TableField("updated")
+    private String updated;
 
 }

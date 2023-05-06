@@ -1,6 +1,8 @@
 package com.Ishop.common.util.util;
 
 
+import com.Ishop.common.entity.User;
+import com.example.Mapper;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -63,6 +65,7 @@ public class RedisUtils {
         }
         return (String) authentication.getPrincipal();
     }
+
 
     public static boolean setSet(final String str,Object ... var){
         try {
