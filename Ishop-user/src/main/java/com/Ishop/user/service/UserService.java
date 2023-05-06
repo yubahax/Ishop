@@ -17,4 +17,6 @@ public interface UserService {
      * 修改
      */
     boolean updateUser(User user);
+
+    boolean changeImage(String image);
 }

@@ -1,6 +1,7 @@
 package com.Ishop.common.util.util;
 
 import org.springframework.stereotype.Component;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import java.util.Objects;
@@ -11,9 +12,12 @@ public class ParamVail {
 
     private static final Pattern VALID_EMAIL_ADDRESS_REGEX =
             Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE);
+    public static boolean isNull(Object o) {
+        return ObjectUtils.isEmpty(o);
+    }
 
     public static boolean vailNumber(int num) {
-        if (Objects.isNull(num)) {
+        if (ObjectUtils.isEmpty(num)) {
             return false;
         }
         String str = String.valueOf(num);
