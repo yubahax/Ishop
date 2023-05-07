@@ -12,7 +12,7 @@ import java.io.Serializable;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class RolePerm implements Serializable {
+public class TbRolePerm implements Serializable {
     @TableId(type = IdType.NONE)
     private Integer id;
 

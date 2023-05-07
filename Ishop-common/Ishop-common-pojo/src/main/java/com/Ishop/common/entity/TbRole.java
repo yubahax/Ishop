@@ -12,22 +12,15 @@ import java.io.Serializable;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Address implements Serializable {
+public class TbRole implements Serializable {
     @TableId(type = IdType.AUTO)
-    private Long addressId;
+    private Integer id;
 
-    @TableField("user_id")
-    private Long userId;
+    @TableField("name")
+    private String name;
 
-    @TableField("user_name")
-    private String userName;
+    @TableField("description")
+    private String description;
 
-    @TableField("tel")
-    private String tel;
-
-    @TableField("street_name")
-    private String streetName;
-
-    @TableField("is_default")
-    private Boolean isDefault;
+//    private Integer[] roles;
 }

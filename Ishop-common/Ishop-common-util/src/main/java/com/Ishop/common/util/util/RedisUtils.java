@@ -1,8 +1,8 @@
 package com.Ishop.common.util.util;
 
 
-import com.Ishop.common.entity.User;
-import com.example.Mapper;
+
+import com.Ishop.common.entity.TbUser;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -15,12 +15,22 @@ public class RedisUtils {
 
     private final static RedisTemplate<String, Object> REDIS_TEMPLATE = new RedisTemplate<>();
 
+    private final static String USER_KEY = "user";
+
     /**
      * 根据key读取数据
      */
     public static Object get(final String key) {
         try {
             return REDIS_TEMPLATE.opsForValue().get(key);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+    public static TbUser getUser() {
+        try {
+            return (TbUser) REDIS_TEMPLATE.opsForValue().get(USER_KEY+getName());
         } catch (Exception e) {
             e.printStackTrace();
         }

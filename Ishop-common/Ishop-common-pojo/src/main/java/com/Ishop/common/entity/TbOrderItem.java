@@ -13,7 +13,7 @@ import java.math.BigDecimal;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class OrderItem implements Serializable {
+public class TbOrderItem implements Serializable {
     @TableId(type = IdType.NONE)
     private String id;
 

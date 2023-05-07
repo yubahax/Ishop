@@ -11,7 +11,7 @@ import java.math.BigDecimal;
 
 @Data
 @AllArgsConstructor
-public class Item implements Serializable {
+public class TbItem implements Serializable {
     @TableId(type = IdType.AUTO)
     private Long id;
 

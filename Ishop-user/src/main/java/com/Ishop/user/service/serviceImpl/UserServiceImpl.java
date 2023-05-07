@@ -1,8 +1,7 @@
 package com.Ishop.user.service.serviceImpl;
 
-import com.Ishop.common.entity.User;
+import com.Ishop.common.entity.TbUser;
 import com.Ishop.common.util.util.OssUtil;
-import com.Ishop.common.util.util.ParamVail;
 import com.Ishop.common.util.util.RedisUtils;
 import com.Ishop.common.util.util.TimeUtil;
 import com.Ishop.user.mapper.UserMapper;
@@ -20,53 +19,53 @@ public class UserServiceImpl implements UserService {
     @Resource
     UserMapper userMapper;
     @Override
-    public User getUseInfo() {
+    public TbUser getUseInfo() {
         String name = RedisUtils.getName();
-        User user;
+        TbUser tbUser;
         if (RedisUtils.hasKey(USER_KEY + name)) {
-            user = (User) RedisUtils.get(USER_KEY + name);
+            tbUser = (TbUser) RedisUtils.get(USER_KEY + name);
         } else {
-            user = userMapper.selectOne(new QueryWrapper<User>().eq("username",name));
-            RedisUtils.set(USER_KEY + name,user);
+            tbUser = userMapper.selectOne(new QueryWrapper<TbUser>().eq("username",name));
+            RedisUtils.set(USER_KEY + name, tbUser);
         }
-        return user;
+        return tbUser;
     }
 
     @Override
-    public boolean signInUser(User user) {
-        user.setCreated(TimeUtil.getTime());
-        user.setUpdated(TimeUtil.getTime());
-        user.setRoleId(0);
-        user.setDescription("普通用户");
-        user.setState(1);
-        return userMapper.insert(user) == 1;
+    public boolean signInUser(TbUser tbUser) {
+        tbUser.setCreated(TimeUtil.getTime());
+        tbUser.setUpdated(TimeUtil.getTime());
+        tbUser.setRoleId(0);
+        tbUser.setDescription("普通用户");
+        tbUser.setState(1);
+        return userMapper.insert(tbUser) == 1;
     }
 
     @Override
-    public boolean updateUser(User user) {
-        return userMapper.updateById(user) == 1;
+    public boolean updateUser(TbUser tbUser) {
+        return userMapper.updateById(tbUser) == 1;
     }
 
     @Override
     public boolean changeImage(String image) {
-        UpdateWrapper<User> wrapper = new UpdateWrapper<>();
+        UpdateWrapper<TbUser> wrapper = new UpdateWrapper<>();
         wrapper.set("file",image).eq("id",getUseInfo().getId());
         boolean flag = userMapper.update(null,wrapper) != 0;
-        User userDetail;
+        TbUser tbUserDetail;
         if (RedisUtils.hasKey(USER_KEY + RedisUtils.getName())) {
-            userDetail = (User) RedisUtils.get(USER_KEY + RedisUtils.getName());
+            tbUserDetail = (TbUser) RedisUtils.get(USER_KEY + RedisUtils.getName());
         } else {
-            userDetail = userMapper.selectById(getUseInfo().getId());
+            tbUserDetail = userMapper.selectById(getUseInfo().getId());
         }
         String str = null;
-        if (userDetail != null) {
-            str = userDetail.getFile();
-            userDetail.setFile(image);
+        if (tbUserDetail != null) {
+            str = tbUserDetail.getFile();
+            tbUserDetail.setFile(image);
         }
         if (str != null) {
             OssUtil.deleteLongFile(str);
         }
-        RedisUtils.set(USER_KEY + RedisUtils.getName(),userDetail);
+        RedisUtils.set(USER_KEY + RedisUtils.getName(), tbUserDetail);
         return  flag;
     }
 }

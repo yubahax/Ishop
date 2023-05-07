@@ -1,7 +1,7 @@
 package com.Ishop.security.service.serviceImpl;
 
 
-import com.Ishop.common.entity.User;
+import com.Ishop.common.entity.TbUser;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 
 import com.Ishop.security.mapper.UserMapper;
@@ -22,7 +22,7 @@ public class UserAuthService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 
-        User data = userMapper.selectOne(new QueryWrapper<User>().eq("name",username));
+        TbUser data = userMapper.selectOne(new QueryWrapper<TbUser>().eq("username",username));
 
         System.out.println("接收user信息：" + data);
         System.out.println("接收的username为："+username);

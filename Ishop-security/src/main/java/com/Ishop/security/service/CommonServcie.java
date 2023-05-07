@@ -4,10 +4,10 @@ package com.Ishop.security.service;
 
 
 
-import com.Ishop.common.entity.User;
+import com.Ishop.common.entity.TbUser;
 
 
 public interface CommonServcie {
 
-    String login(User user);
+    String login(TbUser tbUser);
 }

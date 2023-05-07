@@ -12,7 +12,7 @@ import java.io.Serializable;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class User implements Serializable {
+public class TbUser implements Serializable {
     @TableId(type = IdType.AUTO)
     private Long id;
 

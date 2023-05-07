@@ -1,6 +1,6 @@
 package com.Ishop.security.service.serviceImpl;
 
-import com.Ishop.common.entity.User;
+import com.Ishop.common.entity.TbUser;
 
 import com.Ishop.common.util.util.RedisUtils;
 import com.Ishop.security.util.TokenUtil;
@@ -27,8 +27,8 @@ public class CommonServiceImpl implements CommonServcie {
     private AuthenticationManager authenticationManager;
 
     @Override
-    public String login(User user) {
-        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(user.getName(), user.getPassword());
+    public String login(TbUser tbUser) {
+        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(tbUser.getName(), tbUser.getPassword());
         Authentication authenticate = authenticationManager.authenticate(authenticationToken);
         System.out.println("授权信息：" + authenticate);
         if (authenticate == null) {
@@ -37,7 +37,7 @@ public class CommonServiceImpl implements CommonServcie {
         }
         // 3. 如果认证通过了，使用 userId 生成一个 jwt，jwt 存入 返回体 返回
         UserDetails loginUser = (UserDetails) authenticate.getPrincipal();
-        Long uid = mapper.selectOne(new QueryWrapper<User>().select("uid").eq("name",loginUser.getUsername())).getId();
+        Long uid = mapper.selectOne(new QueryWrapper<TbUser>().select("uid").eq("name",loginUser.getUsername())).getId();
 //        User user1 = new User(uid,loginUser.getUsername(),loginUser.getPassword());
 //        String userId = loginUser.g().getId().toString();
         String jwt = TokenUtil.generateToken(uid);
