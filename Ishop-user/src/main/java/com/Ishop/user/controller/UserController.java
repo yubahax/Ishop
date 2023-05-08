@@ -5,7 +5,6 @@ import com.Ishop.common.entity.TbUser;
 import com.Ishop.common.util.util.*;
 import com.Ishop.user.mapper.UserMapper;
 import com.Ishop.user.service.UserService;
-import com.Ishop.user.util.RedisUtils;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,14 +22,14 @@ public class UserController {
     UserMapper userMapper;
 
     @Resource
-    RedisUtils redisUtils;
+    Yedis yedis;
     @GetMapping("/test")
 
     public RestBean test() {
-        String str = redisUtils.getName();
+        String str = yedis.getName();
         TbUser user = userMapper.selectOne(new QueryWrapper<TbUser>().eq("username",str));
         System.out.println(user);
-        redisUtils.set("user"+str,user);
+        yedis.set("user"+str,user);
 
         return RestGenerator.successResult(str);
     }

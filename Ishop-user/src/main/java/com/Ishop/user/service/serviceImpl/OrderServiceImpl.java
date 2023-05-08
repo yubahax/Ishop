@@ -3,7 +3,7 @@ package com.Ishop.user.service.serviceImpl;
 import com.Ishop.common.entity.TbAddress;
 import com.Ishop.common.entity.TbOrder;
 import com.Ishop.common.entity.TbOrderItem;
-import com.Ishop.common.util.util.AbsRedisUtils;
+import com.Ishop.common.util.util.Yedis;
 import com.Ishop.common.vo.CartProduct;
 import com.Ishop.common.vo.Order;
 import com.Ishop.common.vo.PageOrder;
@@ -12,7 +12,6 @@ import com.Ishop.user.mapper.ItemMapper;
 import com.Ishop.user.mapper.OrderItemMapper;
 import com.Ishop.user.mapper.OrderMapper;
 import com.Ishop.user.service.OrderService;
-import com.Ishop.user.util.RedisUtils;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import org.springframework.stereotype.Service;
 
@@ -36,7 +35,7 @@ public class OrderServiceImpl implements OrderService {
     ItemMapper itemMapper;
 
     @Resource
-    RedisUtils redisUtils;
+    Yedis yedis;
 
     public Order orderTbtoVo(TbOrder tbOrder){
         Order order = new Order();
@@ -47,7 +46,7 @@ public class OrderServiceImpl implements OrderService {
         order.setCloseDate(tbOrder.getCloseTime());
         HashMap<String,String> map = new HashMap<>();
         map.put("is_default","1");
-        map.put("user_id",String.valueOf( redisUtils.getUser(redisUtils.getName()).getId()));
+        map.put("user_id",String.valueOf( yedis.getUser(yedis.getName()).getId()));
         order.setAddressInfo(addressMapper.selectOne(new QueryWrapper<TbAddress>().allEq(map)));
         order.setFinishDate(tbOrder.getEndTime());
         return order;
@@ -65,7 +64,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public PageOrder getOrderList() {
         List<Order> orderList = new ArrayList<>();
-        List<TbOrder> tbOrderList = orderMapper.selectList(new QueryWrapper<TbOrder>().eq("user_id", redisUtils.getUser(redisUtils.getName()).getId()));
+        List<TbOrder> tbOrderList = orderMapper.selectList(new QueryWrapper<TbOrder>().eq("user_id", yedis.getUser(yedis.getName()).getId()));
         for (TbOrder var : tbOrderList) {
             List<TbOrderItem> orderItems = orderItemMapper.selectList(new QueryWrapper<TbOrderItem>().eq("order_id",var.getOrderId()));
             List<CartProduct> cartProducts = new ArrayList<>();

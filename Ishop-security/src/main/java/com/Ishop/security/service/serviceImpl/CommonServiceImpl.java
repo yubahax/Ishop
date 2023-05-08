@@ -2,15 +2,9 @@ package com.Ishop.security.service.serviceImpl;
 
 import com.Ishop.common.entity.TbUser;
 
-import com.Ishop.common.util.util.AbsRedisUtils;
-import com.Ishop.security.util.TokenUtil;
 import com.Ishop.security.service.CommonServcie;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.Ishop.security.mapper.UserMapper;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;

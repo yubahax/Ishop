@@ -2,11 +2,10 @@ package com.Ishop.user.service.serviceImpl;
 
 import com.Ishop.common.entity.TbUser;
 import com.Ishop.common.util.util.OssUtil;
-import com.Ishop.common.util.util.AbsRedisUtils;
 import com.Ishop.common.util.util.TimeUtil;
+import com.Ishop.common.util.util.Yedis;
 import com.Ishop.user.mapper.UserMapper;
 import com.Ishop.user.service.UserService;
-import com.Ishop.user.util.RedisUtils;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import org.springframework.stereotype.Service;
@@ -21,16 +20,16 @@ public class UserServiceImpl implements UserService {
     UserMapper userMapper;
 
     @Resource
-    RedisUtils redisUtils;
+    Yedis yedis;
     @Override
     public TbUser getUseInfo() {
-        String name = redisUtils.getName();
+        String name = yedis.getName();
         TbUser tbUser;
-        if (redisUtils.hasKey(USER_KEY + name)) {
-            tbUser = (TbUser) redisUtils.get(USER_KEY + name);
+        if (yedis.hasKey(USER_KEY + name)) {
+            tbUser = (TbUser) yedis.get(USER_KEY + name);
         } else {
             tbUser = userMapper.selectOne(new QueryWrapper<TbUser>().eq("username",name));
-            redisUtils.set(USER_KEY + name, tbUser);
+            yedis.set(USER_KEY + name, tbUser);
         }
         return tbUser;
     }
@@ -56,8 +55,8 @@ public class UserServiceImpl implements UserService {
         wrapper.set("file",image).eq("id",getUseInfo().getId());
         boolean flag = userMapper.update(null,wrapper) != 0;
         TbUser tbUserDetail;
-        if (redisUtils.hasKey(USER_KEY + redisUtils.getName())) {
-            tbUserDetail = (TbUser) redisUtils.get(USER_KEY + redisUtils.getName());
+        if (yedis.hasKey(USER_KEY + yedis.getName())) {
+            tbUserDetail =  yedis.getUser(yedis.getName());
         } else {
             tbUserDetail = userMapper.selectById(getUseInfo().getId());
         }
@@ -69,7 +68,7 @@ public class UserServiceImpl implements UserService {
         if (str != null) {
             OssUtil.deleteLongFile(str);
         }
-        redisUtils.set(USER_KEY + redisUtils.getName(), tbUserDetail);
+        yedis.set(USER_KEY + yedis.getName(), tbUserDetail);
         return  flag;
     }
 }
