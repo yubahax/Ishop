@@ -6,19 +6,24 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.checkerframework.checker.units.qual.A;
 
 import java.io.Serializable;
+import java.util.Date;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class TbRolePerm implements Serializable {
+public class TbItemDesc implements Serializable {
+
     @TableId(type = IdType.NONE)
-    private Integer id;
+    private Long itemId;
 
-    @TableField("role_id")
-    private Integer roleId;
+    @TableField("created")
+    private String created;
+    @TableField("updated")
+    private String updated;
+    @TableField("item_desc")
 
-    @TableField("permission_id")
-    private Integer permissionId;
+    private String itemDesc;
 }

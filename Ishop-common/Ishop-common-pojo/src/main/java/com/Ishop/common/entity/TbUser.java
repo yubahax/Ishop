@@ -9,6 +9,10 @@ import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 
+/**
+ * @author yubahax
+ * 用户表
+ */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -27,7 +31,6 @@ public class TbUser implements Serializable {
 
     @TableField("email")
     private String email;
-
 
     @TableField("sex")
     private String sex;
