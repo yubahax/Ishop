@@ -7,7 +7,7 @@ import org.springframework.util.StringUtils;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-@Component
+
 public class ParamVail {
 
     private static final Pattern VALID_EMAIL_ADDRESS_REGEX =

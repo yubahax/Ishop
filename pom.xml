@@ -12,7 +12,6 @@
         <module>Ishop-common</module>
         <module>Ishop-security</module>
         <module>Ishop-user</module>
-        <module>Ishop-cache</module>
         <module>Ishop-store</module>
         <module>Ishop-business</module>
         <module>Ishop-common/Ishop-common-pojo</module>

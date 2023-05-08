@@ -1,26 +1,30 @@
-package com.Ishop.common.util.util;
+package com.Ishop.business.util;
 
 
 
 import com.Ishop.common.entity.TbUser;
+import com.Ishop.common.util.util.AbsRedisUtils;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
+@Component
+public class RedisUtils implements AbsRedisUtils {
 
-public class RedisUtils {
-
-    private final static RedisTemplate<String, Object> REDIS_TEMPLATE = new RedisTemplate<>();
+    @Resource
+    RedisTemplate<String, Object> REDIS_TEMPLATE;
 
     private final static String USER_KEY = "user";
 
     /**
      * 根据key读取数据
      */
-    public static Object get(final String key) {
+    public  Object get(final String key) {
         try {
             return REDIS_TEMPLATE.opsForValue().get(key);
         } catch (Exception e) {
@@ -28,9 +32,9 @@ public class RedisUtils {
         }
         return null;
     }
-    public static TbUser getUser() {
+    public  TbUser getUser(String key) {
         try {
-            return (TbUser) REDIS_TEMPLATE.opsForValue().get(USER_KEY+getName());
+            return (TbUser) REDIS_TEMPLATE.opsForValue().get(USER_KEY+key);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -40,7 +44,7 @@ public class RedisUtils {
     /**
      * 写入数据
      */
-    public static boolean set(final String key, Object value) {
+    public  boolean set(String key, Object value) {
         try {
             REDIS_TEMPLATE.opsForValue().set(key, value,12, TimeUnit.HOURS);
             //储存信息12小时后过期
@@ -51,7 +55,7 @@ public class RedisUtils {
         return false;
     }
 
-    public static boolean set(final String key, Object value,int timeCount,TimeUnit timeUnit) {
+    public  boolean set(final String key, Object value,int timeCount,TimeUnit timeUnit) {
         try {
             REDIS_TEMPLATE.opsForValue().set(key, value,timeCount, timeUnit);
             //储存信息12小时后过期
@@ -65,7 +69,7 @@ public class RedisUtils {
     /**
      * 根据token获取用户username
      */
-    public static String getName(){
+    public  String getName(){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         // 认证信息可能为空，因此需要进行判断。
         if (Objects.nonNull(authentication)) {
@@ -77,7 +81,7 @@ public class RedisUtils {
     }
 
 
-    public static boolean setSet(final String str,Object ... var){
+    public  boolean setSet(final String str,Object ... var){
         try {
             REDIS_TEMPLATE.opsForSet().add(str,var);
             return true;
@@ -86,7 +90,7 @@ public class RedisUtils {
         }
         return false;
     }
-    public static Object getSet(final String str){
+    public  Object getSet(final String str){
         try{
             return REDIS_TEMPLATE.opsForSet().members(str);
         }catch (Exception e) {
@@ -96,11 +100,11 @@ public class RedisUtils {
     }
 
 
-    public static boolean hasKey(String key){
+    public  boolean hasKey(String key){
         return Boolean.TRUE.equals(REDIS_TEMPLATE.hasKey(key));
     }
 
-    public static   boolean delSet(String key,Object ... var){
+    public  boolean delSet(String key,Object ... var){
         Long count = REDIS_TEMPLATE.opsForSet().remove(key, var);
         return count == null;
     }

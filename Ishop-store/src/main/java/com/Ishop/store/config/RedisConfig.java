@@ -1,4 +1,4 @@
-package com.Ishop.common.util.config;
+package com.Ishop.store.config;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
