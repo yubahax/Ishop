@@ -57,6 +57,17 @@ public class TimeUtil {
 
     }
 
+    public static String getNext30Time() {
+        SimpleDateFormat format=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Calendar c = Calendar.getInstance();
+        c.add(Calendar.MINUTE,10);
+        //设置为1号,当前日期既为本月第一天
+        String first = format.format(c.getTime());
+        return first;
+
+    }
+
+
     /**
      * 获取月末
      */

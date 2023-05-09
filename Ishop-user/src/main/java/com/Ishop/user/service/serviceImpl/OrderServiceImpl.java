@@ -1,6 +1,7 @@
 package com.Ishop.user.service.serviceImpl;
 
 import com.Ishop.common.entity.TbAddress;
+import com.Ishop.common.entity.TbItem;
 import com.Ishop.common.entity.TbOrder;
 import com.Ishop.common.entity.TbOrderItem;
 import com.Ishop.common.util.util.Yedis;
@@ -55,7 +56,7 @@ public class OrderServiceImpl implements OrderService {
     public CartProduct itemTbtoVo(TbOrderItem tbItem) {
         CartProduct cartProduct = new CartProduct();
         cartProduct.setProductId(Long.valueOf(tbItem.getItemId()));
-//        cartProduct.setProductName();
+        cartProduct.setProductName(itemMapper.selectOne(new QueryWrapper<TbItem>().eq("id",tbItem.getItemId())).getTitle());
         cartProduct.setProductImg(tbItem.getPicPath());
         cartProduct.setProductNum(Long.valueOf(tbItem.getNum()));
         cartProduct.setSalePrice(tbItem.getPrice());

@@ -151,6 +151,15 @@ public class Yedis {
         return null;
     }
 
+    public  boolean del(final String str){
+        try{
+             REDIS_TEMPLATE.delete(str);
+             return true;
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
 
     public  boolean hasKey(String key){
         return Boolean.TRUE.equals(REDIS_TEMPLATE.hasKey(key));
