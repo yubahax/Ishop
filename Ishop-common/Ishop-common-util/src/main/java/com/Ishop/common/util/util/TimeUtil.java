@@ -13,10 +13,14 @@ public class TimeUtil {
     }
 
 
-    public static boolean checkTime(String time) throws ParseException {
+    public static boolean checkTime(String time)  {
         Calendar calendar = Calendar.getInstance();
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        calendar.setTime(format.parse(time));
+        try {
+            calendar.setTime(format.parse(time));
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
         Date c = new Date();
         return c.getTime() > calendar.getTimeInMillis();
     }

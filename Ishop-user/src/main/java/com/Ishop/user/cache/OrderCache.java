@@ -38,22 +38,8 @@ public class OrderCache {
     public void checkOrderTime() {
         if (yedis.hasKey(ORDER_NAME)) {
             List<TbOrder> orders = (List<TbOrder>) yedis.get(ORDER_NAME);
-
-            List<TbOrder> unpayList = orders.stream().filter( a -> {
-                try {
-                    return TimeUtil.checkTime(a.getEndTime());
-                } catch (ParseException e) {
-                    throw new RuntimeException(e);
-                }
-            }).collect(Collectors.toList());
-
-            List<TbOrder> normalList = orders.stream().filter(a-> {
-                try {
-                    return !TimeUtil.checkTime(a.getEndTime());
-                } catch (ParseException e) {
-                    throw new RuntimeException(e);
-                }
-            }).collect(Collectors.toList());
+            List<TbOrder> unpayList = orders.stream().filter( a -> TimeUtil.checkTime(a.getEndTime())).collect(Collectors.toList());
+            List<TbOrder> normalList = orders.stream().filter(a-> !TimeUtil.checkTime(a.getEndTime())).collect(Collectors.toList());
             unpayList.forEach(a-> {
              a.setStatus(6);
              orderMapper.insert(a);
@@ -61,4 +47,7 @@ public class OrderCache {
             yedis.set(ORDER_NAME,normalList);
         }
     }
+
+
+
 }
