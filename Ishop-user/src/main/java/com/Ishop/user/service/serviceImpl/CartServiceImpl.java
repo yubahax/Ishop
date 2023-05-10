@@ -12,6 +12,7 @@ import com.Ishop.user.mapper.ItemMapper;
 import com.Ishop.user.mapper.OrderItemMapper;
 import com.Ishop.user.mapper.OrderMapper;
 import com.Ishop.user.service.CartService;
+import com.Ishop.user.trans.UserTrans;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import org.springframework.stereotype.Service;
 
@@ -40,26 +41,12 @@ public class CartServiceImpl implements CartService {
     @Resource
     CartCache cartCache;
 
+    @Resource
+    UserTrans userTrans;
+
     /**
      * 写stream流一时爽，一直写stream流一直爽
      */
-    public List<TbOrderItem> OrderItemVotoTb (List<Cart> carts,String orderId){
-        List<TbOrderItem> orderItems = new LinkedList<>();
-        List<TbItem> tbItems = itemMapper.selectBatchIds(carts.stream().map(Cart::getProductId).collect(Collectors.toList()));
-        for (TbItem var:tbItems) {
-            TbOrderItem tmp = new TbOrderItem();
-            tmp.setOrderId(orderId);
-            tmp.setItemId(String.valueOf(var.getId()));
-            tmp.setId(String.valueOf(IDUtil.getRandomId()));
-            tmp.setNum(carts.stream().filter(a->a.getProductId().equals(var.getId())).collect(Collectors.toList()).get(0).getProductNum());
-            tmp.setPrice(var.getPrice());
-            tmp.setTitle(var.getTitle());
-            tmp.setPicPath(var.getImage());
-            tmp.setTotalFee(BigDecimal.valueOf(0));
-            orderItems.add(tmp);
-        }
-        return orderItems;
-    }
 
     @Override
     public boolean addCart(Cart cart) {
@@ -102,11 +89,11 @@ public class CartServiceImpl implements CartService {
         tbOrder.setShippingName(null);
         tbOrder.setShippingCode(null);
         if (orderMapper.insert(tbOrder) != 1) {
-            throw  new RuntimeException("创建失败");
+            return false;
         }
 
         List<Cart> carts = cartCache.get();
-        List<TbOrderItem> tbOrderItems = this.OrderItemVotoTb(carts,orderid);
+        List<TbOrderItem> tbOrderItems = userTrans.OrderItemVotoTb(carts,orderid);
         List<BigDecimal> sum = tbOrderItems.stream().map(a-> a.getPrice().divide(BigDecimal.valueOf(a.getNum()))).collect(Collectors.toList());
         BigDecimal var1 = new BigDecimal("0");
         for (BigDecimal j:sum){
@@ -115,7 +102,7 @@ public class CartServiceImpl implements CartService {
         tbOrder.setPayment(var1);
         for (TbOrderItem i:tbOrderItems) {
             if (orderItemMapper.insert(i) != 1) {
-                throw  new RuntimeException("创建失败");
+               return false;
             }
         }
         return true;

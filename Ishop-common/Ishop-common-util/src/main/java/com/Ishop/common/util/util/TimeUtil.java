@@ -1,5 +1,6 @@
 package com.Ishop.common.util.util;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -11,6 +12,14 @@ public class TimeUtil {
         return format.format(date);
     }
 
+
+    public static boolean checkTime(String time) throws ParseException {
+        Calendar calendar = Calendar.getInstance();
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        calendar.setTime(format.parse(time));
+        Date c = new Date();
+        return c.getTime() > calendar.getTimeInMillis();
+    }
     /**
      * 获取本周开始的一天
      */
@@ -63,7 +72,7 @@ public class TimeUtil {
     public static String getNext30Time() {
         SimpleDateFormat format=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Calendar c = Calendar.getInstance();
-        c.add(Calendar.MINUTE,10);
+        c.add(Calendar.MINUTE,30);
         //设置为1号,当前日期既为本月第一天
         String first = format.format(c.getTime());
         return first;
