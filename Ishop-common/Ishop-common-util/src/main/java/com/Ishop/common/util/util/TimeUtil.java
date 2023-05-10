@@ -44,6 +44,8 @@ public class TimeUtil {
         return format.format(last.getTime());
     }
 
+
+
     /**
      * 获取月初的一天
      */
@@ -51,6 +53,7 @@ public class TimeUtil {
         SimpleDateFormat format=new SimpleDateFormat("yyyy-MM-dd");
         Calendar c = Calendar.getInstance();
         c.set(Calendar.DAY_OF_MONTH,1);
+
         //设置为1号,当前日期既为本月第一天
         String first = format.format(c.getTime());
         return first;

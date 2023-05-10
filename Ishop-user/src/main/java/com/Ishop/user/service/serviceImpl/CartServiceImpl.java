@@ -7,6 +7,7 @@ import com.Ishop.common.util.util.IDUtil;
 import com.Ishop.common.util.util.TimeUtil;
 import com.Ishop.common.util.util.Yedis;
 import com.Ishop.common.vo.Cart;
+import com.Ishop.user.cache.CartCache;
 import com.Ishop.user.mapper.ItemMapper;
 import com.Ishop.user.mapper.OrderItemMapper;
 import com.Ishop.user.mapper.OrderMapper;
@@ -24,7 +25,6 @@ import java.util.stream.Collectors;
 @Service
 public class CartServiceImpl implements CartService {
 
-    private static final String CART = "cart";
     @Resource
     Yedis yedis;
 
@@ -36,6 +36,9 @@ public class CartServiceImpl implements CartService {
 
     @Resource
     ItemMapper itemMapper;
+
+    @Resource
+    CartCache cartCache;
 
     /**
      * 写stream流一时爽，一直写stream流一直爽
@@ -60,40 +63,22 @@ public class CartServiceImpl implements CartService {
 
     @Override
     public boolean addCart(Cart cart) {
-        List<Cart> carts = new ArrayList<>();
-        if (yedis.hasKey(yedis.getName() + cart)) {
-            carts = (List<Cart>) yedis.get(yedis.getName() + CART);
-            if (carts.stream().noneMatch(a -> a.getProductId().equals(cart.getProductId()))) {
-                carts.add(cart);
-            } else {
-                carts.stream().filter(a -> a.getProductId().equals(cart.getProductId())).forEach(a -> a.setProductNum(a.getProductNum()+ cart.getProductNum()));
-            }
-
-        } else {
-            carts.add(cart);
-        }
-        return yedis.set(yedis.getName() + CART, carts);
+        return cartCache.set(cart);
     }
 
     @Override
     public boolean delCart(Cart cart) {
-        if (!yedis.hasKey(yedis.getName() + CART)) {
-            return true;
-        }
-        List<Cart> carts = (List<Cart>) yedis.get(yedis.getName() + CART);
-        List<Cart> var = carts.stream().filter(a -> !a.getProductId().equals(cart.getProductId())).collect(Collectors.toList());
-        return yedis.set(yedis.getName() + CART, var);
+       return cartCache.del(cart);
     }
 
     @Override
     public List<Cart> cartList() {
-        List<Cart> carts = (List<Cart>) yedis.get(yedis.getName() + CART);
-        return carts;
+        return cartCache.get();
     }
 
     @Override
     public boolean delAllCart() {
-        return yedis.del(yedis.getName() + CART);
+        return cartCache.del();
     }
 
     @Override
@@ -120,7 +105,7 @@ public class CartServiceImpl implements CartService {
             throw  new RuntimeException("创建失败");
         }
 
-        List<Cart> carts = (List<Cart>) yedis.get(yedis.getName() + CART);
+        List<Cart> carts = cartCache.get();
         List<TbOrderItem> tbOrderItems = this.OrderItemVotoTb(carts,orderid);
         List<BigDecimal> sum = tbOrderItems.stream().map(a-> a.getPrice().divide(BigDecimal.valueOf(a.getNum()))).collect(Collectors.toList());
         BigDecimal var1 = new BigDecimal("0");

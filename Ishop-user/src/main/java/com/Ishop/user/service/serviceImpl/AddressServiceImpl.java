@@ -4,6 +4,7 @@ import com.Ishop.common.entity.TbAddress;
 import com.Ishop.common.entity.TbUser;
 import com.Ishop.common.util.util.ParamVail;
 import com.Ishop.common.util.util.Yedis;
+import com.Ishop.user.cache.AddressCache;
 import com.Ishop.user.mapper.AddressMapper;
 import com.Ishop.user.service.AddressService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -22,35 +23,33 @@ public class AddressServiceImpl implements AddressService {
     AddressMapper addressMapper;
     @Resource
     Yedis yedis;
+    @Resource
+    AddressCache addressCache;
 
-    private static final String ADDRESS_NAME = "address";
 
-    private boolean check(int id){
-        TbAddress tbAddress = new TbAddress();
-        if (yedis.hasKey(ADDRESS_NAME + id)) {
-            tbAddress = (TbAddress) yedis.get(ADDRESS_NAME + id);
-        } else {
-            tbAddress = addressMapper.selectById(id);
-            yedis.set(ADDRESS_NAME + id,tbAddress);
-        }
-        return tbAddress.getUserId().equals(yedis.getUser(yedis.getName()).getId());
-    }
+
     @Override
     public List<TbAddress> getAllAddress() {
         TbUser tbUser = yedis.getUser(yedis.getName());
         List<TbAddress> tbAddresses = addressMapper.selectList(new QueryWrapper<TbAddress>().eq("user_id",tbUser.getId()));
         if (!ParamVail.isNull(tbAddresses)) {
-            tbAddresses.forEach(a -> yedis.set(ADDRESS_NAME + a.getAddressId(), a));
+            tbAddresses.forEach(a -> addressCache.set(a));
+//            tbAddresses.forEach(a -> yedis.set(ADDRESS_NAME + a.getAddressId(), a));
         }
         return tbAddresses;
     }
 
     @Override
     public boolean delAddress(int id) {
-        if (!check(id)) {
+
+        if (!addressCache.check(id)){
             return false;
         }
-        yedis.del(ADDRESS_NAME + id);
+//        if (!check(id)) {
+//            return false;
+//        }
+        addressCache.del(id);
+//        yedis.del(ADDRESS_NAME + id);
         return addressMapper.deleteById(id) == 1;
     }
 
@@ -61,25 +60,34 @@ public class AddressServiceImpl implements AddressService {
         tbAddress.setUserId(user.getId());
         tbAddress.setUserName(user.getName());
         int i = addressMapper.insert(tbAddress);
-        yedis.set(ADDRESS_NAME + tbAddress.getAddressId(),tbAddress);
+        addressCache.set(tbAddress);
+//        yedis.set(ADDRESS_NAME + tbAddress.getAddressId(),tbAddress);
         return  i == 1;
     }
 
     @Override
     public boolean setAddressStatus(int id,int status) {
-        if (!check(id)) {
+        if (!addressCache.check(id)){
             return false;
         }
-        yedis.del(ADDRESS_NAME + id);
+//        if (!check(id)) {
+//            return false;
+//        }
+//        yedis.del(ADDRESS_NAME + id);
+        addressCache.del(id);
         return addressMapper.update(null,new UpdateWrapper<TbAddress>().set("is_default",status).eq("address_id",id)) == 1;
     }
 
     @Override
     public boolean updateAddress(TbAddress tbAddress) {
-        if (!check(Math.toIntExact(tbAddress.getAddressId()))) {
+        if (!addressCache.check(Math.toIntExact(tbAddress.getAddressId()))) {
             return false;
         }
-        yedis.del(ADDRESS_NAME + tbAddress.getAddressId());
+//        if (!check(Math.toIntExact(tbAddress.getAddressId()))) {
+//            return false;
+//        }
+//        yedis.del(ADDRESS_NAME + tbAddress.getAddressId());
+        addressCache.del(Math.toIntExact(tbAddress.getAddressId()));
         return addressMapper.updateById(tbAddress) == 1;
     }
 }
