@@ -2,6 +2,7 @@ package com.Ishop.user.service.serviceImpl;
 
 import com.Ishop.common.entity.TbAddress;
 import com.Ishop.common.entity.TbUser;
+import com.Ishop.common.util.util.ParamVail;
 import com.Ishop.common.util.util.Yedis;
 import com.Ishop.user.mapper.AddressMapper;
 import com.Ishop.user.service.AddressService;
@@ -38,7 +39,9 @@ public class AddressServiceImpl implements AddressService {
     public List<TbAddress> getAllAddress() {
         TbUser tbUser = yedis.getUser(yedis.getName());
         List<TbAddress> tbAddresses = addressMapper.selectList(new QueryWrapper<TbAddress>().eq("user_id",tbUser.getId()));
-        tbAddresses.forEach(a -> yedis.set(ADDRESS_NAME + a.getAddressId(),a));
+        if (!ParamVail.isNull(tbAddresses)) {
+            tbAddresses.forEach(a -> yedis.set(ADDRESS_NAME + a.getAddressId(), a));
+        }
         return tbAddresses;
     }
 
