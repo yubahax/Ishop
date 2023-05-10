@@ -38,6 +38,7 @@ public class AddressServiceImpl implements AddressService {
     public List<TbAddress> getAllAddress() {
         TbUser tbUser = yedis.getUser(yedis.getName());
         List<TbAddress> tbAddresses = addressMapper.selectList(new QueryWrapper<TbAddress>().eq("user_id",tbUser.getId()));
+        tbAddresses.forEach(a -> yedis.set(ADDRESS_NAME + a.getAddressId(),a));
         return tbAddresses;
     }
 
