@@ -14,6 +14,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 public class TbAddress implements Serializable {
     @TableId(type = IdType.AUTO)
+    @TableField("address_id")
     private Long addressId;
 
     @TableField("user_id")
@@ -29,5 +30,5 @@ public class TbAddress implements Serializable {
     private String streetName;
 
     @TableField("is_default")
-    private Boolean isDefault;
+    private Integer isDefault;
 }

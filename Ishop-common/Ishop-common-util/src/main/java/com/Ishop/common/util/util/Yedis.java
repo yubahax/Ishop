@@ -152,6 +152,9 @@ public class Yedis {
     }
 
     public  boolean del(final String str){
+        if (Boolean.FALSE.equals(REDIS_TEMPLATE.hasKey(str))) {
+            return true;
+        }
         try{
              REDIS_TEMPLATE.delete(str);
              return true;
