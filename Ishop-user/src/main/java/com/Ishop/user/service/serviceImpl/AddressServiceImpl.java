@@ -34,7 +34,6 @@ public class AddressServiceImpl implements AddressService {
         List<TbAddress> tbAddresses = addressMapper.selectList(new QueryWrapper<TbAddress>().eq("user_id",tbUser.getId()));
         if (!ParamVail.isNull(tbAddresses)) {
             tbAddresses.forEach(a -> addressCache.set(a));
-//            tbAddresses.forEach(a -> yedis.set(ADDRESS_NAME + a.getAddressId(), a));
         }
         return tbAddresses;
     }
@@ -45,11 +44,7 @@ public class AddressServiceImpl implements AddressService {
         if (!addressCache.check(id)){
             return false;
         }
-//        if (!check(id)) {
-//            return false;
-//        }
         addressCache.del(id);
-//        yedis.del(ADDRESS_NAME + id);
         return addressMapper.deleteById(id) == 1;
     }
 
@@ -61,7 +56,7 @@ public class AddressServiceImpl implements AddressService {
         tbAddress.setUserName(user.getName());
         int i = addressMapper.insert(tbAddress);
         addressCache.set(tbAddress);
-//        yedis.set(ADDRESS_NAME + tbAddress.getAddressId(),tbAddress);
+
         return  i == 1;
     }
 
@@ -70,10 +65,6 @@ public class AddressServiceImpl implements AddressService {
         if (!addressCache.check(id)){
             return false;
         }
-//        if (!check(id)) {
-//            return false;
-//        }
-//        yedis.del(ADDRESS_NAME + id);
         addressCache.del(id);
         return addressMapper.update(null,new UpdateWrapper<TbAddress>().set("is_default",status).eq("address_id",id)) == 1;
     }
@@ -83,10 +74,6 @@ public class AddressServiceImpl implements AddressService {
         if (!addressCache.check(Math.toIntExact(tbAddress.getAddressId()))) {
             return false;
         }
-//        if (!check(Math.toIntExact(tbAddress.getAddressId()))) {
-//            return false;
-//        }
-//        yedis.del(ADDRESS_NAME + tbAddress.getAddressId());
         addressCache.del(Math.toIntExact(tbAddress.getAddressId()));
         return addressMapper.updateById(tbAddress) == 1;
     }

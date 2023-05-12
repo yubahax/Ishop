@@ -1,5 +1,6 @@
 package com.Ishop.store.config;
 
+import com.Ishop.common.entity.TbAddress;
 import com.Ishop.common.util.util.Yedis;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
@@ -13,7 +14,7 @@ import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
-public class RedisConfig {
+public class RedisConfig{
 
     /**
      * RedisTemplate配置

@@ -3,6 +3,8 @@ package com.Ishop.user.controller;
 
 import com.Ishop.common.entity.TbUser;
 import com.Ishop.common.util.util.*;
+import com.Ishop.common.vo.Cart;
+import com.Ishop.common.vo.CartProduct;
 import com.Ishop.user.mapper.UserMapper;
 import com.Ishop.user.service.UserService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -23,15 +25,15 @@ public class UserController {
 
     @Resource
     Yedis yedis;
-    @GetMapping("/test")
-
+    @PostMapping("/test")
     public RestBean test() {
         String str = yedis.getName();
         TbUser user = userMapper.selectOne(new QueryWrapper<TbUser>().eq("username",str));
         System.out.println(user);
-        yedis.set("user"+str,user);
+//        yedis.set("user"+str,user);
 
-        return RestGenerator.successResult(str);
+
+        return RestGenerator.successResult(user);
     }
 
     @PostMapping("/register")

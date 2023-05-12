@@ -28,6 +28,10 @@ public class TbUserCoupon implements Serializable {
     @TableField("created")
     private String created;
 
-
-
+    public TbUserCoupon(Long uid, Long cid, String endtime, String created) {
+        this.uid = uid;
+        this.cid = cid;
+        this.endtime = endtime;
+        this.created = created;
+    }
 }

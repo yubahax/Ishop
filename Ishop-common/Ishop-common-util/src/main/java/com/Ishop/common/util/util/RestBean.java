@@ -9,6 +9,7 @@ import java.io.Serializable;
 @Data
 public class  RestBean<T> implements Serializable {
     private int code;
+
     private String msg;
 
     private T data;

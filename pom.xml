@@ -16,6 +16,7 @@
         <module>Ishop-business</module>
         <module>Ishop-common/Ishop-common-pojo</module>
         <module>Ishop-common/Ishop-common-util</module>
+        <module>Ishop-gateway</module>
     </modules>
     <properties>
         <java.version>1.8</java.version>
