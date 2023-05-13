@@ -1,25 +1,31 @@
-package com.Ishop.user.service.serviceImpl;
+package com.Ishop.store.service.serviceImpl;
 
 import com.Ishop.common.entity.TbAddress;
 import com.Ishop.common.entity.TbItem;
 import com.Ishop.common.entity.TbOrder;
 import com.Ishop.common.entity.TbOrderItem;
+import com.Ishop.common.util.util.IDUtil;
+import com.Ishop.common.util.util.TimeUtil;
 import com.Ishop.common.util.util.Yedis;
+import com.Ishop.common.vo.Cart;
 import com.Ishop.common.vo.CartProduct;
 import com.Ishop.common.vo.Order;
 import com.Ishop.common.vo.PageOrder;
-import com.Ishop.user.mapper.AddressMapper;
-import com.Ishop.user.mapper.ItemMapper;
-import com.Ishop.user.mapper.OrderItemMapper;
-import com.Ishop.user.mapper.OrderMapper;
-import com.Ishop.user.service.OrderService;
+import com.Ishop.store.client.UserClient;
+import com.Ishop.store.mapper.ItemMapper;
+import com.Ishop.store.mapper.OrderItemMapper;
+import com.Ishop.store.mapper.OrderMapper;
+import com.Ishop.store.service.OrderService;
+import com.Ishop.store.trans.UserTrans;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.HashMap;
+
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class OrderServiceImpl implements OrderService {
@@ -30,10 +36,13 @@ public class OrderServiceImpl implements OrderService {
     OrderItemMapper orderItemMapper;
 
     @Resource
-    AddressMapper addressMapper;
+    ItemMapper itemMapper;
 
     @Resource
-    ItemMapper itemMapper;
+    UserTrans userTrans;
+
+    @Resource
+    UserClient userClient;
 
     @Resource
     Yedis yedis;
@@ -45,10 +54,7 @@ public class OrderServiceImpl implements OrderService {
         order.setOrderTotal(tbOrder.getPayment());
         order.setCreateDate(tbOrder.getCreateTime());
         order.setCloseDate(tbOrder.getCloseTime());
-        HashMap<String,String> map = new HashMap<>();
-        map.put("is_default","1");
-        map.put("user_id",String.valueOf( yedis.getUser(yedis.getName()).getId()));
-        order.setAddressInfo(addressMapper.selectOne(new QueryWrapper<TbAddress>().allEq(map)));
+        order.setAddressInfo((TbAddress) userClient.getDefaultAddress().getData());
         order.setFinishDate(tbOrder.getEndTime());
         return order;
     }
@@ -82,5 +88,44 @@ public class OrderServiceImpl implements OrderService {
         pageOrders.setTbOrderList(orderList);
         pageOrders.setTotal(tbOrderList.size());
         return pageOrders;
+    }
+
+    @Override
+    public boolean createOrder(Long userId ,List<Cart> carts) {
+        String orderid = String.valueOf(IDUtil.getRandomId());
+        TbOrder tbOrder = new TbOrder();
+        tbOrder.setOrderId(orderid);
+        tbOrder.setCreateTime(TimeUtil.getTime());
+        tbOrder.setBuyerComment(null);
+        tbOrder.setBuyerNick(null);
+        tbOrder.setBuyerMessage(null);
+        tbOrder.setCloseTime(TimeUtil.getNext30Time());
+        tbOrder.setConsignTime(null);
+        tbOrder.setEndTime(null);
+        tbOrder.setPaymentTime(null);
+        tbOrder.setPaymentType(5);
+        tbOrder.setPostFee(BigDecimal.valueOf(0));
+        tbOrder.setUserId(userId);
+        tbOrder.setUpdateTime(TimeUtil.getTime());
+        tbOrder.setStatus(0);
+        tbOrder.setShippingName(null);
+        tbOrder.setShippingCode(null);
+        if (orderMapper.insert(tbOrder) != 1) {
+            return false;
+        }
+
+        List<TbOrderItem> tbOrderItems = userTrans.OrderItemVotoTb(carts,orderid);
+        List<BigDecimal> sum = tbOrderItems.stream().map(a-> a.getPrice().divide(BigDecimal.valueOf(a.getNum()))).collect(Collectors.toList());
+        BigDecimal var1 = new BigDecimal("0");
+        for (BigDecimal j:sum){
+            var1 = var1.add(j);
+        }
+        tbOrder.setPayment(var1);
+        for (TbOrderItem i:tbOrderItems) {
+            if (orderItemMapper.insert(i) != 1) {
+                return false;
+            }
+        }
+        return true;
     }
 }

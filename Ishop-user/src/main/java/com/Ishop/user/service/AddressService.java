@@ -15,4 +15,6 @@ public interface AddressService {
     boolean updateAddress(TbAddress tbAddress);
 
     boolean setAddressStatus(int id,int status);
+
+    TbAddress getDefaultADDress();
 }

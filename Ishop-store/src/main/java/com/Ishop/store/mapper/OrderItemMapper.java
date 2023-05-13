@@ -1,4 +1,4 @@
-package com.Ishop.user.mapper;
+package com.Ishop.store.mapper;
 
 import com.Ishop.common.entity.TbOrderItem;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;

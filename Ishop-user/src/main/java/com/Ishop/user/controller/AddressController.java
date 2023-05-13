@@ -20,6 +20,9 @@ public class AddressController {
         return RestGenerator.successResult(addressService.getAllAddress());
     }
 
+    @GetMapping("/getDefaultAddress")
+    public RestBean getDefaultAddress() {return RestGenerator.successResult(addressService.getDefaultADDress());}
+
     @GetMapping("/delAddress")
     public RestBean delAddress(@RequestParam("addressId") int id){
         if (!ParamVail.vailNumber(id)) {

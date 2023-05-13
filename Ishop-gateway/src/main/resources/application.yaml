@@ -5,16 +5,19 @@ spring:
     name: gateway-service
   cloud:
     gateway:
-      # 配置路由，注意这里是个列表，每一项都包含了很多信息
       routes:
-        - id: user-service   # 路由名称
-          uri: lb://user-service  # 路由的地址，lb表示使用负载均衡到微服务，也可以使用http正常转发
-          predicates: # 路由规则，断言什么请求会被路由
-            - Path=/user/**,/order/**,/address/**,/cart/**,/coupon/**,  # 只要是访问的这个路径，一律都被路由到上面指定的服务
-        - id: security-service  # 路由名称
-          uri: lb://security-service  # 路由的地址，lb表示使用负载均衡到微服务，也可以使用http正常转发
-          predicates: # 路由规则，断言什么请求会被路由
-            - Path=/sso/**  # 只要是访问的这个路径，一律都被路由到上面指定的服务
+        - id: user-service
+          uri: lb://user-service
+          predicates:
+            - Path=/user/**,/address/**,/cart/**,/coupon/**,
+        - id: security-service
+          uri: lb://security-service
+          predicates:
+            - Path=/sso/**
+        - id: store-service
+          uri: lb://store-service
+          predicates:
+            - Path=/order/**,/item/**
     nacos:
       discovery:
         # 配置Nacos注册中心地址

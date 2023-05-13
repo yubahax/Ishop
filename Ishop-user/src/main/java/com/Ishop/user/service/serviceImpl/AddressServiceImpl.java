@@ -12,6 +12,7 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -76,5 +77,13 @@ public class AddressServiceImpl implements AddressService {
         }
         addressCache.del(Math.toIntExact(tbAddress.getAddressId()));
         return addressMapper.updateById(tbAddress) == 1;
+    }
+
+    @Override
+    public TbAddress getDefaultADDress() {
+        HashMap<String,String> map = new HashMap<>();
+        map.put("is_default","1");
+        map.put("user_id",String.valueOf( yedis.getUser(yedis.getName()).getId()));
+        return addressMapper.selectOne(new QueryWrapper<TbAddress>().allEq(map));
     }
 }

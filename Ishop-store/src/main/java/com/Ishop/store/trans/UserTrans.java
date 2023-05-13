@@ -1,10 +1,11 @@
-package com.Ishop.user.trans;
+package com.Ishop.store.trans;
 
 import com.Ishop.common.entity.TbItem;
 import com.Ishop.common.entity.TbOrderItem;
 import com.Ishop.common.util.util.IDUtil;
 import com.Ishop.common.vo.Cart;
-import com.Ishop.user.mapper.ItemMapper;
+
+import com.Ishop.store.mapper.ItemMapper;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -12,6 +13,7 @@ import java.math.BigDecimal;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
+
 @Component
 public class UserTrans {
 

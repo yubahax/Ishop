@@ -4,13 +4,10 @@ import com.Ishop.common.entity.TbOrder;
 import com.Ishop.common.util.util.TimeUtil;
 import com.Ishop.common.util.util.Yedis;
 import com.Ishop.user.mapper.OrderMapper;
-import org.apache.hadoop.yarn.webapp.hamlet.Hamlet;
-import org.springframework.data.annotation.ReadOnlyProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
