@@ -5,6 +5,7 @@ import com.Ishop.common.entity.TbItem;
 import com.Ishop.common.entity.TbOrder;
 import com.Ishop.common.entity.TbOrderItem;
 import com.Ishop.common.util.util.IDUtil;
+import com.Ishop.common.util.util.RestBean;
 import com.Ishop.common.util.util.TimeUtil;
 import com.Ishop.common.util.util.Yedis;
 import com.Ishop.common.vo.Cart;
@@ -24,6 +25,7 @@ import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -54,7 +56,11 @@ public class OrderServiceImpl implements OrderService {
         order.setOrderTotal(tbOrder.getPayment());
         order.setCreateDate(tbOrder.getCreateTime());
         order.setCloseDate(tbOrder.getCloseTime());
-        order.setAddressInfo((TbAddress) userClient.getDefaultAddress().getData());
+        RestBean i = userClient.getDefaultAddress();
+        LinkedHashMap map = (LinkedHashMap) i.getData();
+
+        TbAddress j = (TbAddress)  map.get(0);
+        order.setAddressInfo(j);
         order.setFinishDate(tbOrder.getEndTime());
         return order;
     }

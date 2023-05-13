@@ -10,7 +10,7 @@ import java.util.List;
 @FeignClient("store-service")
 public interface StoreClient {
     @PostMapping("/order/createCartOrder")
-    RestBean createCartOrder(@RequestBody Long id, @RequestBody List<Cart> carts);
+    RestBean createCartOrder(@RequestParam("id") Long id, @RequestBody List<Cart> carts);
 
 
 

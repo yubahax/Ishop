@@ -30,7 +30,7 @@ public class UserController {
         String str = yedis.getName();
         TbUser user = userMapper.selectOne(new QueryWrapper<TbUser>().eq("username",str));
         System.out.println(user);
-//        yedis.set("user"+str,user);
+        yedis.set("user"+str,user);
 
 
         return RestGenerator.successResult(user);

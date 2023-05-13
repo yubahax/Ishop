@@ -1,9 +1,10 @@
-package com.Ishop.user.cache;
+package com.Ishop.store.cache;
 
 import com.Ishop.common.entity.TbOrder;
 import com.Ishop.common.util.util.TimeUtil;
 import com.Ishop.common.util.util.Yedis;
-import com.Ishop.user.mapper.OrderMapper;
+
+import com.Ishop.store.mapper.OrderMapper;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 

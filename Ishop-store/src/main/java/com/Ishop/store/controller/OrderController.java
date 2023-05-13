@@ -23,7 +23,7 @@ public class OrderController {
     }
 
     @PostMapping("/createCartOrder")
-    public RestBean createCartOrder(@RequestBody Long id, @RequestBody List<Cart> carts) {
+    public RestBean createCartOrder(@RequestParam("id") Long id, @RequestBody List<Cart> carts) {
         if(!ParamVail.vailNumber(Math.toIntExact(id)) || ParamVail.isNull(carts)) {
             return RestGenerator.errorResult("非法参数");
         }

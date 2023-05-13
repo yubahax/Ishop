@@ -15,9 +15,6 @@ spring:
    sentinel:
     transport:
       dashboard: localhost:8858
-   session:
-    # 存储类型修改为redis
-    store-type: redis
    redis:
     host: localhost
     database: 0
@@ -30,15 +27,17 @@ spring:
 #      bookservice-seata-service-group: default
 #    grouplist:
 #      default: localhost:8868
-#security:
-#  oauth2:
-#    client:
-#      #基操
-#      client-id: web
-#      client-secret: 654321
-#    resource:
-#      #因为资源服务器得验证你的Token是否有访问此资源的权限以及用户信息，所以只需要一个验证地址
-#      token-info-uri: http://localhost:8500/sso/oauth/check_token
+security:
+  oauth2:
+    client:
+      #基操
+      client-id: web
+      client-secret: 654321
+    resource:
+      #因为资源服务器得验证你的Token是否有访问此资源的权限以及用户信息，所以只需要一个验证地址
+      token-info-uri: http://localhost:8084/sso/oauth/check_token
+      jwt:
+        key-value: lbwnb #注意这里要跟验证服务器的密钥一致，这样算出来的签名才会一致
 
 feign:
   circuitbreaker:

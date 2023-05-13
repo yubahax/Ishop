@@ -42,7 +42,7 @@ public class OuthConfig extends AuthorizationServerConfigurerAdapter {
                 .autoApprove(false)    //自动审批，这里关闭，要的就是一会体验那种感觉
                 .redirectUris("http://localhost:8083/login")
 //                .redirectUris("/test")
-                .scopes("user-service", "security-service", "borrow")     //授权范围，这里我们使用全部all
+                .scopes("user-service", "security-service", "store-service")     //授权范围，这里我们使用全部all
                 .authorizedGrantTypes("client_credentials", "password", "implicit", "authorization_code", "refresh_token");
     }
 
