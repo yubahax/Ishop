@@ -24,6 +24,14 @@ public class TimeUtil {
         Date c = new Date();
         return c.getTime() > calendar.getTimeInMillis();
     }
+
+    public static String addDayTime(int day)  {
+        SimpleDateFormat format=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Calendar c = Calendar.getInstance();
+        c.add(Calendar.DATE,day);
+        //设置为1号,当前日期既为本月第一天
+        return format.format(c.getTime());
+    }
     /**
      * 获取本周开始的一天
      */

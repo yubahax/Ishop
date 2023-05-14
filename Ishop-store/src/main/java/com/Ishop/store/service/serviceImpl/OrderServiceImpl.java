@@ -58,7 +58,6 @@ public class OrderServiceImpl implements OrderService {
         order.setCloseDate(tbOrder.getCloseTime());
         RestBean i = userClient.getDefaultAddress();
         LinkedHashMap map = (LinkedHashMap) i.getData();
-
         TbAddress j = (TbAddress)  map.get(0);
         order.setAddressInfo(j);
         order.setFinishDate(tbOrder.getEndTime());

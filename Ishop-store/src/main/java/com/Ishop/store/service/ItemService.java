@@ -18,7 +18,7 @@ public interface ItemService {
      * @Param PriceLe 右边价格
      * @Return {@link List< PageItem>}
      */
-    PageItem getAllItem(int num,int size,String sort,int priceGe,int PriceLe);
+    PageItem getAllItem(int num,String sort,int priceGe,int PriceLe);
 
     /**
      * @Description后台分页获取全部商品列表,可按创建时间和商品名称、商品描述、商品价格进行查询
@@ -27,7 +27,7 @@ public interface ItemService {
      * @Param maxDate终止时间
      * @Return {@link PageItem}
      */
-    PageItem getItemList(int num, int size,String searchItem,String minDate,String maxDate);
+    PageItem getItemList(int num,String searchItem,String minDate,String maxDate);
 
     /**
      * @Description 前台全部商品页面中点击某个商品查看详情,获取商品详情

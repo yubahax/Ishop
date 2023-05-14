@@ -30,7 +30,7 @@ public class TbCoupon implements Serializable {
     private int total;
 
     @TableField("active_time")
-    private String activetime;
+    private int activetime;
 
     @TableField("updated")
     private String updated;

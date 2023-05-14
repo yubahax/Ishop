@@ -23,8 +23,10 @@ public class ItemServiceImpl implements ItemService {
     @Resource
     ItemDescMapper itemDescMapper;
 
+    private static final int PAGE_SIZE = 10;
+
     @Override
-    public PageItem getAllItem(int num,int size,String sort,int priceGe,int priceLe) {
+    public PageItem getAllItem(int num,String sort,int priceGe,int priceLe) {
         if(priceGe == 0 && priceLe == 0)
         {
             priceGe = Integer.MIN_VALUE;
@@ -36,7 +38,7 @@ public class ItemServiceImpl implements ItemService {
             condition = true;
         if(sort.equals("Asc"))
             s = true;
-        Page<TbItem> tbItemPage = new Page<>(num,size);
+        Page<TbItem> tbItemPage = new Page<>(num,PAGE_SIZE);
         QueryWrapper<TbItem> tbItemQueryWrapper = new QueryWrapper<>();
         tbItemQueryWrapper
                 .between("price",priceGe,priceLe)
@@ -49,8 +51,8 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public PageItem getItemList(int num, int size,String searchItem,String minDate,String maxDate) {
-        Page<TbItem> tbItemPage = new Page<>(num,size);
+    public PageItem getItemList(int num,String searchItem,String minDate,String maxDate) {
+        Page<TbItem> tbItemPage = new Page<>(num,PAGE_SIZE);
         QueryWrapper<TbItem> tbItemQueryWrapper = new QueryWrapper<>();
         tbItemQueryWrapper
                 .between("created",minDate,maxDate)

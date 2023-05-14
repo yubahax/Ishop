@@ -19,56 +19,66 @@ public class ItemController {
     ItemService itemService;
     @GetMapping("/getAllItem")
     public RestBean getAllItem(@RequestParam(defaultValue = "1") int num,
-                               @RequestParam(defaultValue = "10") int size,
                                @RequestParam(defaultValue = "") String sort,
                                @RequestParam(defaultValue = "0") int priceGe,
                                @RequestParam(defaultValue = "0") int priceLe){
-        if(!(ParamVail.vailNumber(priceGe) && ParamVail.vailNumber(priceLe))){
+        if(!ParamVail.vailNumber(num,priceGe,priceLe) && ParamVail.vailString(sort)){
             return RestGenerator.errorResult("非法参数");
         }
-        return RestGenerator.successResult(itemService.getAllItem(num,size,sort,priceGe,priceLe));
+        return RestGenerator.successResult(itemService.getAllItem(num,sort,priceGe,priceLe));
     }
 
     @GetMapping("getItemList")
     public RestBean getItemList(@RequestParam(defaultValue = "1") int num,
-                                @RequestParam(defaultValue = "10") int size,
                                 @RequestParam("searchItem") String searchItem,
                                 @RequestParam("minDate") String minDate,
                                 @RequestParam("maxDate") String maxDate){
-        if(!ParamVail.vailString(searchItem))
+        if(!ParamVail.vailNumber(num) && ParamVail.vailString(searchItem,minDate,maxDate)){
             return RestGenerator.errorResult("非法参数");
-        return RestGenerator.successResult(itemService.getItemList(num,size,searchItem,minDate,maxDate));
+        }
+        return RestGenerator.successResult(itemService.getItemList(num,searchItem,minDate,maxDate));
     }
 
     @GetMapping("/getItemDesc")
     public RestBean getItem(@RequestParam("itemId") int itemId){
+        if(!ParamVail.vailNumber(itemId)){
+            return RestGenerator.errorResult("非法参数");
+        }
         return RestGenerator.successResult(itemService.getItemDesc(itemId));
     }
 
     @PostMapping ("/addItem")
     public RestBean addItem(@RequestBody TbItem tbItem){
-        return itemService.addItem(tbItem)?
-                RestGenerator.successResult("添加成功"):RestGenerator.errorResult("添加失败");
+        if(ParamVail.isNull(tbItem)){
+            return RestGenerator.errorResult("非法参数");
+        }
+        return itemService.addItem(tbItem)?RestGenerator.successResult("添加成功"):RestGenerator.errorResult("添加失败");
     }
 
     @PostMapping ("/updateStatus")
     public RestBean updateStatus(@RequestParam("id") int id,
                                  @RequestParam("status") int status){
-        return itemService.updateStatus(id,status)?
-                RestGenerator.successResult("发布成功"):RestGenerator.errorResult("发布失败");
+        if(!ParamVail.vailNumber(id,status)){
+            return RestGenerator.errorResult("非法参数");
+        }
+        return itemService.updateStatus(id,status)?RestGenerator.successResult("发布成功"):RestGenerator.errorResult("发布失败");
 
     }
 
     @PostMapping("/delItem")
     public RestBean delItem(@RequestParam("id")int id){
-        return itemService.delItem(id)?
-                RestGenerator.successResult("删除成功"):RestGenerator.errorResult("删除失败");
+        if(!ParamVail.vailNumber(id)){
+            return RestGenerator.errorResult("非法参数");
+        }
+        return itemService.delItem(id)?RestGenerator.successResult("删除成功"):RestGenerator.errorResult("删除失败");
     }
 
     @PostMapping("/delItemList")
     public RestBean delItemList(@RequestParam("ids") List<Integer> ids){
-        return itemService.delItemList(ids)?
-                RestGenerator.successResult("删除成功"):RestGenerator.errorResult("删除失败");
+        if(ParamVail.isNull(ids)){
+            return RestGenerator.errorResult("非法参数");
+        }
+        return itemService.delItemList(ids)?RestGenerator.successResult("删除成功"):RestGenerator.errorResult("删除失败");
     }
 
 }
