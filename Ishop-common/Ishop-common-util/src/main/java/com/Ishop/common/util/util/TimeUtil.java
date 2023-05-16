@@ -12,6 +12,11 @@ public class TimeUtil {
         return format.format(date);
     }
 
+    public static String getSimpleTime() {
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        Date date = new Date();
+        return format.format(date);
+    }
 
     public static boolean checkTime(String time)  {
         Calendar calendar = Calendar.getInstance();

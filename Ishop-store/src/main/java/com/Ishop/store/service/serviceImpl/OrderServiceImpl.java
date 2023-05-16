@@ -8,10 +8,7 @@ import com.Ishop.common.util.util.IDUtil;
 import com.Ishop.common.util.util.RestBean;
 import com.Ishop.common.util.util.TimeUtil;
 import com.Ishop.common.util.util.Yedis;
-import com.Ishop.common.vo.Cart;
-import com.Ishop.common.vo.CartProduct;
-import com.Ishop.common.vo.Order;
-import com.Ishop.common.vo.PageOrder;
+import com.Ishop.common.vo.*;
 import com.Ishop.store.client.UserClient;
 import com.Ishop.store.mapper.ItemMapper;
 import com.Ishop.store.mapper.OrderItemMapper;
@@ -23,10 +20,8 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
-import java.util.ArrayList;
+import java.util.*;
 
-import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
@@ -132,5 +127,77 @@ public class OrderServiceImpl implements OrderService {
             }
         }
         return true;
+    }
+
+    @Override
+    public List<CountOrderItem> getDayOrderItem() {
+       List<String> list =  orderMapper.selectList(new QueryWrapper<TbOrder>().select("order_id").like("create_time",TimeUtil.getSimpleTime() + "%")).stream().map(TbOrder::getOrderId).collect(Collectors.toList());
+       List<TbOrderItem> tbOrderItems = new LinkedList<>();
+       for (String s:list) {
+           List<TbOrderItem> var = orderItemMapper.selectList(new QueryWrapper<TbOrderItem>().eq("order_id",s));
+           tbOrderItems.addAll(var);
+       }
+       Map<String,List<TbOrderItem>> lists = tbOrderItems.stream().collect(Collectors.groupingBy(TbOrderItem::getItemId));
+       List<CountOrderItem> counterOrderList = new LinkedList<>();
+       for (String key:lists.keySet()) {
+           List<TbOrderItem> var = lists.get(key);
+           CountOrderItem countOrderItem = new CountOrderItem();
+           countOrderItem.setItemId(var.get(0).getItemId());
+           countOrderItem.setNum(var.stream().map(TbOrderItem::getNum).reduce(0,Integer::sum));
+           countOrderItem.setTitle(var.get(0).getTitle());
+           countOrderItem.setTotalPrice(new BigDecimal(var.stream().map(TbOrderItem::getNum).reduce(0,Integer::sum)).multiply(var.get(0).getPrice()));
+           counterOrderList.add(countOrderItem);
+       }
+
+        return counterOrderList;
+    }
+
+    @Override
+    public List<CountOrderItem>  getWeekOrderItem() {
+        List<String> list =  orderMapper.selectList(new QueryWrapper<TbOrder>().select("order_id").between("create_time",TimeUtil.getLastWeek(),TimeUtil.getNextWeek())).stream().map(TbOrder::getOrderId).collect(Collectors.toList());
+
+        List<TbOrderItem> tbOrderItems = new LinkedList<>();
+        for (String s:list) {
+            List<TbOrderItem> var = orderItemMapper.selectList(new QueryWrapper<TbOrderItem>().eq("order_id",s));
+            tbOrderItems.addAll(var);
+        }
+        Map<String,List<TbOrderItem>> lists = tbOrderItems.stream().collect(Collectors.groupingBy(TbOrderItem::getItemId));
+        List<CountOrderItem> counterOrderList = new LinkedList<>();
+        for (String key:lists.keySet()) {
+            List<TbOrderItem> var = lists.get(key);
+            CountOrderItem countOrderItem = new CountOrderItem();
+            countOrderItem.setItemId(var.get(0).getItemId());
+            countOrderItem.setNum(var.stream().map(TbOrderItem::getNum).reduce(0,Integer::sum));
+            countOrderItem.setTitle(var.get(0).getTitle());
+            countOrderItem.setTotalPrice(new BigDecimal(var.stream().map(TbOrderItem::getNum).reduce(0,Integer::sum)).multiply(var.get(0).getPrice()));
+            counterOrderList.add(countOrderItem);
+        }
+
+        return counterOrderList;
+
+    }
+
+    @Override
+    public List<CountOrderItem>  getMonthOrderItem() {
+        List<String> list =  orderMapper.selectList(new QueryWrapper<TbOrder>().select("order_id").between("create_time",TimeUtil.getLastMonth(),TimeUtil.getNextMonth())).stream().map(TbOrder::getOrderId).collect(Collectors.toList());
+
+        List<TbOrderItem> tbOrderItems = new LinkedList<>();
+        for (String s:list) {
+            List<TbOrderItem> var = orderItemMapper.selectList(new QueryWrapper<TbOrderItem>().eq("order_id",s));
+            tbOrderItems.addAll(var);
+        }
+        Map<String,List<TbOrderItem>> lists = tbOrderItems.stream().collect(Collectors.groupingBy(TbOrderItem::getItemId));
+        List<CountOrderItem> counterOrderList = new LinkedList<>();
+        for (String key:lists.keySet()) {
+            List<TbOrderItem> var = lists.get(key);
+            CountOrderItem countOrderItem = new CountOrderItem();
+            countOrderItem.setItemId(var.get(0).getItemId());
+            countOrderItem.setNum(var.stream().map(TbOrderItem::getNum).reduce(0,Integer::sum));
+            countOrderItem.setTitle(var.get(0).getTitle());
+            countOrderItem.setTotalPrice(new BigDecimal(var.stream().map(TbOrderItem::getNum).reduce(0,Integer::sum)).multiply(var.get(0).getPrice()));
+            counterOrderList.add(countOrderItem);
+        }
+
+        return counterOrderList;
     }
 }
