@@ -20,6 +20,11 @@ public class VipController {
         return RestGenerator.successResult(memberService.getVipInfo());
     }
 
+    @GetMapping("/upToVip")
+    public RestBean upToVip() {
+        return memberService.upToVip()?RestGenerator.successResult("改变成功"):RestGenerator.errorResult("改变失败");
+    }
+
 
 
 

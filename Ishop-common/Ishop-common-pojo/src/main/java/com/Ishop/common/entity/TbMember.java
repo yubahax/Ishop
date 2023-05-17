@@ -13,7 +13,6 @@ import java.io.Serializable;
 @NoArgsConstructor
 public class TbMember implements Serializable {
 
-    @TableId(type = IdType.AUTO)
     private Long id;
 
     @TableField("state")

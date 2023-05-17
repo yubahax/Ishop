@@ -55,7 +55,6 @@ public class CouponController {
             return RestGenerator.errorResult("非法参数");
         }
         return couponService.updateCouponNum(id, num)?RestGenerator.successResult("更改成功"):RestGenerator.errorResult("更改失败");
-
     }
 
 
