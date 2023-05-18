@@ -20,19 +20,6 @@ public class UserController {
     @Resource
     UserService userService;
 
-    @Resource
-    UserMapper userMapper;
-
-    @Resource
-    Yedis yedis;
-    @PostMapping("/test")
-    public RestBean test() {
-        String str = yedis.getName();
-        TbUser user = userMapper.selectOne(new QueryWrapper<TbUser>().eq("username",str));
-        System.out.println(user);
-        yedis.set("user"+str,user);
-        return RestGenerator.successResult(user);
-    }
 
     @PostMapping("/register")
     public RestBean register(@RequestBody TbUser tbUser) {

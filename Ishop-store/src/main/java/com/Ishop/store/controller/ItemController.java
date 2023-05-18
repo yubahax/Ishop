@@ -2,21 +2,25 @@ package com.Ishop.store.controller;
 
 
 import com.Ishop.common.entity.TbItem;
-import com.Ishop.common.util.util.ParamVail;
-import com.Ishop.common.util.util.RestBean;
-import com.Ishop.common.util.util.RestGenerator;
+import com.Ishop.common.util.util.*;
+import com.Ishop.common.vo.Product;
 import com.Ishop.store.service.ItemService;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
-import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
 @RequestMapping("/item")
 public class ItemController {
+
     @Resource
     ItemService itemService;
+
+
+
+    private static final String ITEM_NAME = "bitem";
+
     @GetMapping("/getAllItem")
     public RestBean getAllItem(@RequestParam(defaultValue = "1") int num,
                                @RequestParam(defaultValue = "") String sort,
@@ -44,7 +48,8 @@ public class ItemController {
         if(!ParamVail.vailNumber(itemId)){
             return RestGenerator.errorResult("非法参数");
         }
-        return RestGenerator.successResult(itemService.getItemDesc(itemId));
+        Product product = itemService.getItemDesc(itemId);
+        return product != null?RestGenerator.successResult(product):RestGenerator.errorResult("未知错误");
     }
 
     @PostMapping ("/addItem")

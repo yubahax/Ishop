@@ -1,6 +1,8 @@
 package com.Ishop.user.service.serviceImpl;
 
+import com.Ishop.common.entity.TbItem;
 import com.Ishop.common.entity.TbUser;
+import com.Ishop.common.util.util.BloomFilterHelper;
 import com.Ishop.common.util.util.OssUtil;
 import com.Ishop.common.util.util.TimeUtil;
 import com.Ishop.common.util.util.Yedis;
@@ -8,19 +10,26 @@ import com.Ishop.user.mapper.UserMapper;
 import com.Ishop.user.service.UserService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
+import java.util.List;
 
 @Service
 public class UserServiceImpl implements UserService {
 
     private final static String USER_KEY = "user";
+    private static final String USER_NAME = "buser";
+
     @Resource
     UserMapper userMapper;
 
     @Resource
     Yedis yedis;
+    @Resource
+    BloomFilterHelper bloomFilterHelper;
     @Override
     public TbUser getUseInfo() {
         String name = yedis.getName();
@@ -71,4 +80,18 @@ public class UserServiceImpl implements UserService {
         yedis.set(USER_KEY + yedis.getName(), tbUserDetail);
         return  flag;
     }
+    @PostConstruct
+    public void initItemBloom() {
+        List<TbUser> tbUsers  = userMapper.selectList(new QueryWrapper<TbUser>().select("id"));
+        tbUsers.forEach(a -> yedis.addByBloomFilter(bloomFilterHelper,USER_NAME,a.getId()));
+    }
+
+    @Scheduled(cron = "0 0 12 ? * 4")
+    public void reflushItemBloom() {
+        List<TbUser> tbUsers  = userMapper.selectList(new QueryWrapper<TbUser>().select("id"));
+        yedis.del(USER_NAME);
+        tbUsers.forEach(a -> yedis.addByBloomFilter(bloomFilterHelper,USER_NAME,a.getId()));
+    }
+
+
 }

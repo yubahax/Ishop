@@ -2,7 +2,9 @@ package com.Ishop.store.service.serviceImpl;
 
 import com.Ishop.common.entity.TbItem;
 import com.Ishop.common.entity.TbItemDesc;
+import com.Ishop.common.util.util.BloomFilterHelper;
 import com.Ishop.common.util.util.TimeUtil;
+import com.Ishop.common.util.util.Yedis;
 import com.Ishop.common.vo.PageItem;
 import com.Ishop.common.vo.Product;
 import com.Ishop.store.mapper.ItemDescMapper;
@@ -11,8 +13,10 @@ import com.Ishop.store.service.ItemService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.util.List;
 
@@ -22,6 +26,14 @@ public class ItemServiceImpl implements ItemService {
     ItemMapper itemMapper;
     @Resource
     ItemDescMapper itemDescMapper;
+
+    @Resource
+    Yedis yedis;
+
+    @Resource
+    BloomFilterHelper bloomFilterHelper;
+
+    private static final String ITEM_NAME = "bitem";
 
     private static final int PAGE_SIZE = 10;
 
@@ -70,6 +82,9 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public Product getItemDesc(int itemId) {
+        if (!yedis.includeByBloomFilter(bloomFilterHelper,ITEM_NAME,itemId)) {
+            return null;
+        }
         Product product = new Product();
         TbItem tbItem = itemMapper.selectById(itemId);
         TbItemDesc tbItemDesc = itemDescMapper.selectById(itemId);
@@ -86,11 +101,16 @@ public class ItemServiceImpl implements ItemService {
         tbItem.setStatus(0);
         tbItem.setCreated(TimeUtil.getTime());
         tbItem.setUpdated(TimeUtil.getTime());
-        return (itemMapper.insert(tbItem) == 1);
+        boolean flag = itemMapper.insert(tbItem) == 1;
+        yedis.addByBloomFilter(bloomFilterHelper,ITEM_NAME,tbItem.getId());
+        return flag;
     }
 
     @Override
     public boolean updateStatus(int id,int status) {
+        if (!yedis.includeByBloomFilter(bloomFilterHelper,ITEM_NAME,id)) {
+            return false;
+        }
         UpdateWrapper<TbItem> tbItemUpdateWrapper = new UpdateWrapper<>();
         tbItemUpdateWrapper
                 .eq("id",id)
@@ -100,16 +120,40 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public boolean delItem(int id) {
+        if (!yedis.includeByBloomFilter(bloomFilterHelper,ITEM_NAME,id)) {
+            return false;
+        }
         return (itemMapper.deleteById(id)>=1);
     }
 
     @Override
     public boolean delItemList(List<Integer> ids) {
+        for (int i:ids) {
+            if (!yedis.includeByBloomFilter(bloomFilterHelper, ITEM_NAME, i)) {
+                return false;
+            }
+        }
         return (itemMapper.deleteBatchIds(ids)>=1);
     }
 
     @Override
     public boolean updateItem(TbItem tbItem) {
+        if (!yedis.includeByBloomFilter(bloomFilterHelper,ITEM_NAME,tbItem.getId())) {
+            return false;
+        }
         return ((itemMapper.updateById(tbItem))>=1);
+    }
+
+    @PostConstruct
+    public void initItemBloom() {
+        List<TbItem> tbItems  = itemMapper.selectList(new QueryWrapper<TbItem>().select("id"));
+        tbItems.forEach(a -> yedis.addByBloomFilter(bloomFilterHelper,ITEM_NAME,a.getId()));
+    }
+
+    @Scheduled(cron = "0 0 12 ? * 4")
+    public void reflushItemBloom() {
+        List<TbItem> tbItems  = itemMapper.selectList(new QueryWrapper<TbItem>().select("id"));
+        yedis.del(ITEM_NAME);
+        tbItems.forEach(a -> yedis.addByBloomFilter(bloomFilterHelper,ITEM_NAME,a.getId()));
     }
 }

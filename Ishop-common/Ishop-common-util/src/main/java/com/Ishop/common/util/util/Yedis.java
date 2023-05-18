@@ -4,6 +4,7 @@ import com.Ishop.common.entity.TbUser;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Preconditions;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceClientConfiguration;
@@ -17,6 +18,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
@@ -63,12 +65,16 @@ class tmplate{
         return redisTemplate;
     }
 }
+
 public class Yedis {
 
     RedisTemplate<String, Object> REDIS_TEMPLATE ;
 
+
+
     public Yedis() {
-       this.REDIS_TEMPLATE = tmplate.redisTemplate();
+
+        this.REDIS_TEMPLATE = tmplate.redisTemplate();
     }
 
     private final static String USER_KEY = "user";
@@ -142,6 +148,29 @@ public class Yedis {
         }
         return false;
     }
+
+    public <T> void addByBloomFilter(BloomFilterHelper<T> bloomFilterHelper, String key, T value) {
+        Preconditions.checkArgument(bloomFilterHelper != null, "bloomFilterHelper不能为空");
+        int[] offset = bloomFilterHelper.murmurHashOffset(value);
+        for (int i : offset) {
+            REDIS_TEMPLATE.opsForValue().setBit(key, i, true);
+        }
+    }
+
+    /**
+     * 根据给定的布隆过滤器判断值是否存在
+     */
+    public <T> boolean includeByBloomFilter(BloomFilterHelper<T> bloomFilterHelper, String key, T value) {
+        Preconditions.checkArgument(bloomFilterHelper != null, "bloomFilterHelper不能为空");
+        int[] offset = bloomFilterHelper.murmurHashOffset(value);
+        for (int i : offset) {
+            if (!REDIS_TEMPLATE.opsForValue().getBit(key, i)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public  Object getSet(final String str){
         try{
             return REDIS_TEMPLATE.opsForSet().members(str);
