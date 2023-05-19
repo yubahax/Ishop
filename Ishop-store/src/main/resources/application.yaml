@@ -8,6 +8,9 @@ spring:
     url: jdbc:mysql://localhost:3306/summer
     username: root
     password: 575888hmq
+  redis:
+    cluster:
+       nodes: 127.0.0.1:7001,127.0.0.1:7002,127.0.0.1:7003,127.0.0.1:6001,127.0.0.1:6002,127.0.0.1:6003
   cloud:
    nacos:
     discovery:

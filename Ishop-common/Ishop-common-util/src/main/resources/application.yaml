@@ -11,13 +11,9 @@ spring:
     port: 15672
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/ssmtest
+    url: jdbc:mysql://localhost:3306/summer
     username: root
     password: 575888hmq
-  redis:
-    host: 127.0.0.1
-    database: 0
-    port: 6379
   cloud:
     nacos:
       discovery:

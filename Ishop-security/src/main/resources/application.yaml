@@ -8,15 +8,14 @@ server:
 spring:
   application:
     name: security-service
-  redis:
-    host: 127.0.0.1
-    database: 0
-    port: 6379
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/summer
     username: root
     password: 575888hmq
+  redis:
+    cluster:
+      nodes: 127.0.0.1:7001,127.0.0.1:7002,127.0.0.1:7003,127.0.0.1:6001,127.0.0.1:6002,127.0.0.1:6003
   cloud:
     nacos:
       discovery:
