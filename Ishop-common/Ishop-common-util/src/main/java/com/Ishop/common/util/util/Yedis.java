@@ -6,6 +6,10 @@ import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+import org.springframework.boot.autoconfigure.cache.CacheProperties;
+import org.springframework.data.redis.connection.RedisClusterConfiguration;
+import org.springframework.data.redis.connection.RedisClusterNode;
+import org.springframework.data.redis.connection.RedisNode;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceClientConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
@@ -18,10 +22,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
-
 class tmplate{
 
     public static RedisTemplate<String, Object> redisTemplate() {
@@ -33,6 +37,7 @@ class tmplate{
         om.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
         om.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
         jackson2JsonRedisSerializer.setObjectMapper(om);
+
         // 配置redisTemplate
         GenericObjectPoolConfig genericObjectPoolConfig = new GenericObjectPoolConfig();
         genericObjectPoolConfig.setMaxIdle(3);
@@ -40,16 +45,27 @@ class tmplate{
         genericObjectPoolConfig.setMaxTotal(3);
         genericObjectPoolConfig.setMaxWaitMillis(-1);
         genericObjectPoolConfig.setTimeBetweenEvictionRunsMillis(100);
-        RedisStandaloneConfiguration redisStandaloneConfiguration = new RedisStandaloneConfiguration();
-        redisStandaloneConfiguration.setDatabase(0);
-        redisStandaloneConfiguration.setHostName("127.0.0.1");
-        redisStandaloneConfiguration.setPort(6379);
+        RedisClusterConfiguration rd = new RedisClusterConfiguration();
+        RedisNode redisNode1 = new RedisClusterNode("127.0.0.1",6001);
+        RedisNode redisNode2 = new RedisClusterNode("127.0.0.1",6002);
+        RedisNode redisNode3 = new RedisClusterNode("127.0.0.1",6003);
+        RedisNode redisNode4 = new RedisClusterNode("127.0.0.1",7001);
+        RedisNode redisNode5 = new RedisClusterNode("127.0.0.1",7002);
+        RedisNode redisNode6 = new RedisClusterNode("127.0.0.1",7003);
+        List<RedisNode> redisNodes = new ArrayList<>();
+        redisNodes.add(redisNode1);
+        redisNodes.add(redisNode2);
+        redisNodes.add(redisNode3);
+        redisNodes.add(redisNode4);
+        redisNodes.add(redisNode5);
+        redisNodes.add(redisNode6);
+        rd.setClusterNodes(redisNodes);
         LettuceClientConfiguration clientConfig = LettucePoolingClientConfiguration.builder()
                 .commandTimeout(Duration.ofMillis(5000))
                 .shutdownTimeout(Duration.ofMillis(100))
                 .poolConfig(genericObjectPoolConfig)
                 .build();
-        LettuceConnectionFactory factory = new LettuceConnectionFactory(redisStandaloneConfiguration, clientConfig);
+        LettuceConnectionFactory factory = new LettuceConnectionFactory(rd,clientConfig);
         factory.afterPropertiesSet();
         redisTemplate.setConnectionFactory(factory);
         RedisSerializer<?> stringSerializer = new StringRedisSerializer();
