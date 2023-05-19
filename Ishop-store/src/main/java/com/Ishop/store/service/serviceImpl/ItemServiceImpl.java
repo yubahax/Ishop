@@ -30,12 +30,11 @@ public class ItemServiceImpl implements ItemService {
     @Resource
     Yedis yedis;
 
-    @Resource
-    BloomFilterHelper bloomFilterHelper;
 
     private static final String ITEM_NAME = "bitem";
 
     private static final int PAGE_SIZE = 10;
+
 
     @Override
     public PageItem getAllItem(int num,String sort,int priceGe,int priceLe) {
@@ -82,9 +81,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public Product getItemDesc(int itemId) {
-        if (!yedis.includeByBloomFilter(bloomFilterHelper,ITEM_NAME,itemId)) {
-            return null;
-        }
+
         Product product = new Product();
         TbItem tbItem = itemMapper.selectById(itemId);
         TbItemDesc tbItemDesc = itemDescMapper.selectById(itemId);
@@ -102,15 +99,13 @@ public class ItemServiceImpl implements ItemService {
         tbItem.setCreated(TimeUtil.getTime());
         tbItem.setUpdated(TimeUtil.getTime());
         boolean flag = itemMapper.insert(tbItem) == 1;
-        yedis.addByBloomFilter(bloomFilterHelper,ITEM_NAME,tbItem.getId());
+
         return flag;
     }
 
     @Override
     public boolean updateStatus(int id,int status) {
-        if (!yedis.includeByBloomFilter(bloomFilterHelper,ITEM_NAME,id)) {
-            return false;
-        }
+
         UpdateWrapper<TbItem> tbItemUpdateWrapper = new UpdateWrapper<>();
         tbItemUpdateWrapper
                 .eq("id",id)
@@ -120,40 +115,32 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public boolean delItem(int id) {
-        if (!yedis.includeByBloomFilter(bloomFilterHelper,ITEM_NAME,id)) {
-            return false;
-        }
+
         return (itemMapper.deleteById(id)>=1);
     }
 
     @Override
     public boolean delItemList(List<Integer> ids) {
-        for (int i:ids) {
-            if (!yedis.includeByBloomFilter(bloomFilterHelper, ITEM_NAME, i)) {
-                return false;
-            }
-        }
+
         return (itemMapper.deleteBatchIds(ids)>=1);
     }
 
     @Override
     public boolean updateItem(TbItem tbItem) {
-        if (!yedis.includeByBloomFilter(bloomFilterHelper,ITEM_NAME,tbItem.getId())) {
-            return false;
-        }
+
         return ((itemMapper.updateById(tbItem))>=1);
     }
 
-    @PostConstruct
-    public void initItemBloom() {
-        List<TbItem> tbItems  = itemMapper.selectList(new QueryWrapper<TbItem>().select("id"));
-        tbItems.forEach(a -> yedis.addByBloomFilter(bloomFilterHelper,ITEM_NAME,a.getId()));
-    }
-
-    @Scheduled(cron = "0 0 12 ? * 4")
-    public void reflushItemBloom() {
-        List<TbItem> tbItems  = itemMapper.selectList(new QueryWrapper<TbItem>().select("id"));
-        yedis.del(ITEM_NAME);
-        tbItems.forEach(a -> yedis.addByBloomFilter(bloomFilterHelper,ITEM_NAME,a.getId()));
-    }
+//    @PostConstruct
+//    public void initItemBloom() {
+//        List<TbItem> tbItems  = itemMapper.selectList(new QueryWrapper<TbItem>().select("id"));
+//        tbItems.forEach(a -> yedis.addByBloomFilter(bloomFilterHelper,ITEM_NAME,a.getId()));
+//    }
+//
+//    @Scheduled(cron = "0 0 12 ? * 4")
+//    public void reflushItemBloom() {
+//        List<TbItem> tbItems  = itemMapper.selectList(new QueryWrapper<TbItem>().select("id"));
+//        yedis.del(ITEM_NAME);
+//        tbItems.forEach(a -> yedis.addByBloomFilter(bloomFilterHelper,ITEM_NAME,a.getId()));
+//    }
 }

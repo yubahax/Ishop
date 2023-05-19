@@ -18,4 +18,6 @@ public interface OrderService {
 
     List<CountOrderItem>  getWeekOrderItem();
     List<CountOrderItem>  getMonthOrderItem();
+
+    boolean toExcel(int type);
 }

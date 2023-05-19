@@ -13,7 +13,6 @@
         <module>Ishop-security</module>
         <module>Ishop-user</module>
         <module>Ishop-store</module>
-        <module>Ishop-business</module>
         <module>Ishop-common/Ishop-common-pojo</module>
         <module>Ishop-common/Ishop-common-util</module>
         <module>Ishop-gateway</module>

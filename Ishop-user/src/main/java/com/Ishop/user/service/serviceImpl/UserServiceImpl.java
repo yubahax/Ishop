@@ -28,8 +28,7 @@ public class UserServiceImpl implements UserService {
 
     @Resource
     Yedis yedis;
-    @Resource
-    BloomFilterHelper bloomFilterHelper;
+
     @Override
     public TbUser getUseInfo() {
         String name = yedis.getName();
@@ -80,18 +79,18 @@ public class UserServiceImpl implements UserService {
         yedis.set(USER_KEY + yedis.getName(), tbUserDetail);
         return  flag;
     }
-    @PostConstruct
-    public void initItemBloom() {
-        List<TbUser> tbUsers  = userMapper.selectList(new QueryWrapper<TbUser>().select("id"));
-        tbUsers.forEach(a -> yedis.addByBloomFilter(bloomFilterHelper,USER_NAME,a.getId()));
-    }
-
-    @Scheduled(cron = "0 0 12 ? * 4")
-    public void reflushItemBloom() {
-        List<TbUser> tbUsers  = userMapper.selectList(new QueryWrapper<TbUser>().select("id"));
-        yedis.del(USER_NAME);
-        tbUsers.forEach(a -> yedis.addByBloomFilter(bloomFilterHelper,USER_NAME,a.getId()));
-    }
+//    @PostConstruct
+//    public void initItemBloom() {
+//        List<TbUser> tbUsers  = userMapper.selectList(new QueryWrapper<TbUser>().select("id"));
+//        tbUsers.forEach(a -> yedis.addByBloomFilter(bloomFilterHelper,USER_NAME,a.getId()));
+//    }
+//
+//    @Scheduled(cron = "0 0 12 ? * 4")
+//    public void reflushItemBloom() {
+//        List<TbUser> tbUsers  = userMapper.selectList(new QueryWrapper<TbUser>().select("id"));
+//        yedis.del(USER_NAME);
+//        tbUsers.forEach(a -> yedis.addByBloomFilter(bloomFilterHelper,USER_NAME,a.getId()));
+//    }
 
 
 }

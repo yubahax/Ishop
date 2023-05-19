@@ -15,6 +15,7 @@ import com.Ishop.store.mapper.OrderItemMapper;
 import com.Ishop.store.mapper.OrderMapper;
 import com.Ishop.store.service.OrderService;
 import com.Ishop.store.trans.UserTrans;
+import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import org.springframework.stereotype.Service;
 
@@ -199,5 +200,29 @@ public class OrderServiceImpl implements OrderService {
         }
 
         return counterOrderList;
+    }
+
+    @Override
+    public boolean toExcel(int type) {
+        List<CountOrderItem> list = new LinkedList<>();
+        switch (type) {
+            case 1:
+                list = this.getDayOrderItem();
+                break;
+            case 2:
+                list = this.getWeekOrderItem();
+                break;
+            case 3:
+                list = this.getMonthOrderItem();
+                break;
+            default:
+                return false;
+        }
+        System.out.println(list);
+        String fileName = "E:\\java.xlsx";
+        // 这里 需要指定写用哪个class去写，然后写到第一个sheet，名字为模板 然后文件流会自动关闭
+        //write方法两个参数 ，第一个参数文件路径名称，第二个参数实体类class
+        EasyExcel.write(fileName, CountOrderItem.class).sheet("第一个sheet").doWrite(list);
+        return true;
     }
 }
