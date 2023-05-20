@@ -1,13 +1,7 @@
 package com.Ishop.store.service.serviceImpl;
 
-import com.Ishop.common.entity.TbAddress;
-import com.Ishop.common.entity.TbItem;
-import com.Ishop.common.entity.TbOrder;
-import com.Ishop.common.entity.TbOrderItem;
-import com.Ishop.common.util.util.IDUtil;
-import com.Ishop.common.util.util.RestBean;
-import com.Ishop.common.util.util.TimeUtil;
-import com.Ishop.common.util.util.Yedis;
+import com.Ishop.common.entity.*;
+import com.Ishop.common.util.util.*;
 import com.Ishop.common.vo.*;
 import com.Ishop.store.client.UserClient;
 import com.Ishop.store.mapper.ItemMapper;
@@ -17,12 +11,22 @@ import com.Ishop.store.service.OrderService;
 import com.Ishop.store.trans.UserTrans;
 import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.ConnectionFactory;
+import com.rabbitmq.client.GetResponse;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 @Service
@@ -44,6 +48,12 @@ public class OrderServiceImpl implements OrderService {
 
     @Resource
     Yedis yedis;
+
+    @Resource
+    RabbitTemplate rabbitTemplate;
+
+    @Resource
+    private ConnectionFactory connectionFactory;
 
     public Order orderTbtoVo(TbOrder tbOrder){
         Order order = new Order();
@@ -91,8 +101,9 @@ public class OrderServiceImpl implements OrderService {
         return pageOrders;
     }
 
+    @Transactional(rollbackFor = RuntimeException.class)
     @Override
-    public boolean createOrder(Long userId ,List<Cart> carts) {
+    public boolean createOrder(Long userId , List<Cart> carts, TbCoupon tbCoupon) {
         String orderid = String.valueOf(IDUtil.getRandomId());
         TbOrder tbOrder = new TbOrder();
         tbOrder.setOrderId(orderid);
@@ -109,12 +120,9 @@ public class OrderServiceImpl implements OrderService {
         tbOrder.setUserId(userId);
         tbOrder.setUpdateTime(TimeUtil.getTime());
         tbOrder.setStatus(0);
+        //status 0 默认状态
         tbOrder.setShippingName(null);
         tbOrder.setShippingCode(null);
-        if (orderMapper.insert(tbOrder) != 1) {
-            return false;
-        }
-
         List<TbOrderItem> tbOrderItems = userTrans.OrderItemVotoTb(carts,orderid);
         List<BigDecimal> sum = tbOrderItems.stream().map(a-> a.getPrice().divide(BigDecimal.valueOf(a.getNum()))).collect(Collectors.toList());
         BigDecimal var1 = new BigDecimal("0");
@@ -122,17 +130,32 @@ public class OrderServiceImpl implements OrderService {
             var1 = var1.add(j);
         }
         tbOrder.setPayment(var1);
-        for (TbOrderItem i:tbOrderItems) {
-            if (orderItemMapper.insert(i) != 1) {
-                return false;
+        if (!ParamVail.isNull(tbCoupon)) {
+            if (tbOrder.getPayment().compareTo(new BigDecimal(tbCoupon.getLimitnum())) >= 0) {
+                if ("reduction".equals(tbCoupon.getType())) {
+                    tbOrder.setPayment(tbOrder.getPayment().subtract(new BigDecimal(tbCoupon.getValue())));
+                } else {
+                    tbOrder.setPayment(tbOrder.getPayment().multiply(new BigDecimal(tbCoupon.getValue())));
+                }
             }
         }
+        if (orderMapper.insert(tbOrder) != 1) {
+            throw new RuntimeException("插入错误");
+        }
+        for (TbOrderItem i:tbOrderItems) {
+            if (orderItemMapper.insert(i) != 1) {
+                throw new RuntimeException("插入错误");
+            }
+        }
+
+        rabbitTemplate.convertAndSend("amq.direct", "yyds", tbOrder.getOrderId());
+        //orderid放入延时队列，五分钟后未支付则取消订单
         return true;
     }
 
     @Override
     public List<CountOrderItem> getDayOrderItem() {
-       List<String> list =  orderMapper.selectList(new QueryWrapper<TbOrder>().select("order_id").like("create_time",TimeUtil.getSimpleTime() + "%")).stream().map(TbOrder::getOrderId).collect(Collectors.toList());
+       List<String> list =  orderMapper.selectList(new QueryWrapper<TbOrder>().select("order_id").like("create_time",TimeUtil.getSimpleTime() + "%").eq("status",1)).stream().map(TbOrder::getOrderId).collect(Collectors.toList());
        List<TbOrderItem> tbOrderItems = new LinkedList<>();
        for (String s:list) {
            List<TbOrderItem> var = orderItemMapper.selectList(new QueryWrapper<TbOrderItem>().eq("order_id",s));
@@ -155,7 +178,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public List<CountOrderItem>  getWeekOrderItem() {
-        List<String> list =  orderMapper.selectList(new QueryWrapper<TbOrder>().select("order_id").between("create_time",TimeUtil.getLastWeek(),TimeUtil.getNextWeek())).stream().map(TbOrder::getOrderId).collect(Collectors.toList());
+        List<String> list =  orderMapper.selectList(new QueryWrapper<TbOrder>().select("order_id").between("create_time",TimeUtil.getLastWeek(),TimeUtil.getNextWeek()).eq("status",1)).stream().map(TbOrder::getOrderId).collect(Collectors.toList());
 
         List<TbOrderItem> tbOrderItems = new LinkedList<>();
         for (String s:list) {
@@ -180,7 +203,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public List<CountOrderItem>  getMonthOrderItem() {
-        List<String> list =  orderMapper.selectList(new QueryWrapper<TbOrder>().select("order_id").between("create_time",TimeUtil.getLastMonth(),TimeUtil.getNextMonth())).stream().map(TbOrder::getOrderId).collect(Collectors.toList());
+        List<String> list =  orderMapper.selectList(new QueryWrapper<TbOrder>().select("order_id").between("create_time",TimeUtil.getLastMonth(),TimeUtil.getNextMonth()).eq("status",1)).stream().map(TbOrder::getOrderId).collect(Collectors.toList());
 
         List<TbOrderItem> tbOrderItems = new LinkedList<>();
         for (String s:list) {
@@ -224,5 +247,19 @@ public class OrderServiceImpl implements OrderService {
         //write方法两个参数 ，第一个参数文件路径名称，第二个参数实体类class
         EasyExcel.write(fileName, CountOrderItem.class).sheet("第一个sheet").doWrite(list);
         return true;
+    }
+
+    @Override
+    public boolean payOrder(String orderId){
+        return orderMapper.update(null,new UpdateWrapper<TbOrder>().set("status",1).eq("order_id",orderId)) == 1;
+    }
+
+    @Override
+    public boolean expireOrder(String orderId) {
+        int status = orderMapper.selectOne(new QueryWrapper<TbOrder>().eq("order_id",orderId)).getStatus();
+        if (status == 1) {
+            return true;
+        }
+        return orderMapper.update(null,new UpdateWrapper<TbOrder>().set("status",2).eq("order_id",orderId)) == 1;
     }
 }
