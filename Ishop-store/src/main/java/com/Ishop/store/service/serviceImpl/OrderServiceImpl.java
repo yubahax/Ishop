@@ -1,10 +1,14 @@
 package com.Ishop.store.service.serviceImpl;
 
-import com.Ishop.common.entity.*;
-import com.Ishop.common.util.util.*;
+import com.Ishop.common.entity.TbCoupon;
+import com.Ishop.common.entity.TbOrder;
+import com.Ishop.common.entity.TbOrderItem;
+import com.Ishop.common.util.util.IDUtil;
+import com.Ishop.common.util.util.ParamVail;
+import com.Ishop.common.util.util.TimeUtil;
+import com.Ishop.common.util.util.Yedis;
 import com.Ishop.common.vo.*;
-import com.Ishop.store.client.UserClient;
-import com.Ishop.store.mapper.ItemMapper;
+import com.Ishop.store.mapper.CouponMapper;
 import com.Ishop.store.mapper.OrderItemMapper;
 import com.Ishop.store.mapper.OrderMapper;
 import com.Ishop.store.service.OrderService;
@@ -12,21 +16,16 @@ import com.Ishop.store.trans.UserTrans;
 import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.ConnectionFactory;
-import com.rabbitmq.client.GetResponse;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.io.IOException;
 import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
-
-import java.util.concurrent.TimeoutException;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -38,13 +37,13 @@ public class OrderServiceImpl implements OrderService {
     OrderItemMapper orderItemMapper;
 
     @Resource
-    ItemMapper itemMapper;
+    CouponMapper couponMapper;
+
 
     @Resource
     UserTrans userTrans;
 
-    @Resource
-    UserClient userClient;
+
 
     @Resource
     Yedis yedis;
@@ -52,33 +51,8 @@ public class OrderServiceImpl implements OrderService {
     @Resource
     RabbitTemplate rabbitTemplate;
 
-    @Resource
-    private ConnectionFactory connectionFactory;
 
-    public Order orderTbtoVo(TbOrder tbOrder){
-        Order order = new Order();
-        order.setOrderId(Long.valueOf(tbOrder.getOrderId()));
-        order.setOrderStatus(String.valueOf(tbOrder.getStatus()));
-        order.setOrderTotal(tbOrder.getPayment());
-        order.setCreateDate(tbOrder.getCreateTime());
-        order.setCloseDate(tbOrder.getCloseTime());
-        RestBean i = userClient.getDefaultAddress();
-        LinkedHashMap map = (LinkedHashMap) i.getData();
-        TbAddress j = (TbAddress)  map.get(0);
-        order.setAddressInfo(j);
-        order.setFinishDate(tbOrder.getEndTime());
-        return order;
-    }
 
-    public CartProduct itemTbtoVo(TbOrderItem tbItem) {
-        CartProduct cartProduct = new CartProduct();
-        cartProduct.setProductId(Long.valueOf(tbItem.getItemId()));
-        cartProduct.setProductName(itemMapper.selectOne(new QueryWrapper<TbItem>().eq("id",tbItem.getItemId())).getTitle());
-        cartProduct.setProductImg(tbItem.getPicPath());
-        cartProduct.setProductNum(Long.valueOf(tbItem.getNum()));
-        cartProduct.setSalePrice(tbItem.getPrice());
-        return cartProduct;
-    }
     @Override
     public PageOrder getOrderList() {
         List<Order> orderList = new ArrayList<>();
@@ -87,10 +61,10 @@ public class OrderServiceImpl implements OrderService {
             List<TbOrderItem> orderItems = orderItemMapper.selectList(new QueryWrapper<TbOrderItem>().eq("order_id",var.getOrderId()));
             List<CartProduct> cartProducts = new ArrayList<>();
             for (TbOrderItem var1:orderItems) {
-                CartProduct var2 = this.itemTbtoVo(var1);
+                CartProduct var2 = userTrans.itemTbtoVo(var1);
                 cartProducts.add(var2);
             }
-            Order order = this.orderTbtoVo(var);
+            Order order = userTrans.orderTbtoVo(var);
             order.setGoodsList(cartProducts);
 
             orderList.add(order);
@@ -103,7 +77,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Transactional(rollbackFor = RuntimeException.class)
     @Override
-    public boolean createOrder(Long userId , List<Cart> carts, TbCoupon tbCoupon) {
+    public boolean createOrder(Long userId , List<Cart> carts, VoCoupon voCoupon) {
         String orderid = String.valueOf(IDUtil.getRandomId());
         TbOrder tbOrder = new TbOrder();
         tbOrder.setOrderId(orderid);
@@ -130,15 +104,17 @@ public class OrderServiceImpl implements OrderService {
             var1 = var1.add(j);
         }
         tbOrder.setPayment(var1);
-        if (!ParamVail.isNull(tbCoupon)) {
-            if (tbOrder.getPayment().compareTo(new BigDecimal(tbCoupon.getLimitnum())) >= 0) {
-                if ("reduction".equals(tbCoupon.getType())) {
-                    tbOrder.setPayment(tbOrder.getPayment().subtract(new BigDecimal(tbCoupon.getValue())));
+        if (!ParamVail.isNull(voCoupon)) {
+
+            if (tbOrder.getPayment().compareTo(new BigDecimal(voCoupon.getLimitnum())) >= 0) {
+                if ("reduction".equals(voCoupon.getType())) {
+                    tbOrder.setPayment(tbOrder.getPayment().subtract(new BigDecimal(voCoupon.getValue())));
                 } else {
-                    tbOrder.setPayment(tbOrder.getPayment().multiply(new BigDecimal(tbCoupon.getValue())));
+                    tbOrder.setPayment(tbOrder.getPayment().multiply(new BigDecimal(voCoupon.getValue())));
                 }
             }
         }
+        tbOrder.setShippingCode(String.valueOf(voCoupon.getId()));
         if (orderMapper.insert(tbOrder) != 1) {
             throw new RuntimeException("插入错误");
         }
@@ -179,7 +155,6 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public List<CountOrderItem>  getWeekOrderItem() {
         List<String> list =  orderMapper.selectList(new QueryWrapper<TbOrder>().select("order_id").between("create_time",TimeUtil.getLastWeek(),TimeUtil.getNextWeek()).eq("status",1)).stream().map(TbOrder::getOrderId).collect(Collectors.toList());
-
         List<TbOrderItem> tbOrderItems = new LinkedList<>();
         for (String s:list) {
             List<TbOrderItem> var = orderItemMapper.selectList(new QueryWrapper<TbOrderItem>().eq("order_id",s));
@@ -227,7 +202,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public boolean toExcel(int type) {
-        List<CountOrderItem> list = new LinkedList<>();
+        List<CountOrderItem> list;
         switch (type) {
             case 1:
                 list = this.getDayOrderItem();
@@ -256,10 +231,60 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public boolean expireOrder(String orderId) {
-        int status = orderMapper.selectOne(new QueryWrapper<TbOrder>().eq("order_id",orderId)).getStatus();
-        if (status == 1) {
+        TbOrder order = orderMapper.selectOne(new QueryWrapper<TbOrder>().eq("order_id",orderId));
+        if (order.getStatus() == 1) {
             return true;
         }
+        if (order.getShippingCode() != null) {
+            rabbitTemplate.convertAndSend("cou.direct", "yuba", order.getShippingCode());
+            //删除购物卷
+        }
         return orderMapper.update(null,new UpdateWrapper<TbOrder>().set("status",2).eq("order_id",orderId)) == 1;
+    }
+    @Transactional(rollbackFor = RuntimeException.class)
+    @Override
+    public boolean buyItem(Product product, int count, VoCoupon coupon) {
+        Long userId = yedis.getUser(yedis.getName()).getId();
+        String orderid = String.valueOf(IDUtil.getRandomId());
+        TbOrder tbOrder = new TbOrder();
+        tbOrder.setOrderId(orderid);
+        tbOrder.setCreateTime(TimeUtil.getTime());
+        tbOrder.setBuyerComment(null);
+        tbOrder.setBuyerNick(null);
+        tbOrder.setBuyerMessage(null);
+        tbOrder.setCloseTime(TimeUtil.getNext30Time());
+        tbOrder.setConsignTime(null);
+        tbOrder.setEndTime(null);
+        tbOrder.setPaymentTime(null);
+        tbOrder.setPaymentType(5);
+        tbOrder.setPostFee(BigDecimal.valueOf(0));
+        tbOrder.setUserId(userId);
+        tbOrder.setUpdateTime(TimeUtil.getTime());
+        tbOrder.setStatus(0);
+        tbOrder.setShippingName(null);
+        tbOrder.setShippingCode(null);
+        TbOrderItem tbOrderItems = userTrans.OrderItemVotoVo(product,orderid,count);
+        BigDecimal var = new BigDecimal(String.valueOf(tbOrderItems.getPrice())).multiply(new BigDecimal(count));
+        tbOrder.setPayment(var);
+        tbOrder.setShippingCode(String.valueOf(coupon.getId()));
+        if (!ParamVail.isNull(coupon)) {
+            if (tbOrder.getPayment().compareTo(new BigDecimal(coupon.getLimitnum())) >= 0) {
+                if ("reduction".equals(coupon.getType())) {
+                    tbOrder.setPayment(tbOrder.getPayment().subtract(new BigDecimal(coupon.getValue())));
+                } else {
+                    tbOrder.setPayment(tbOrder.getPayment().multiply(new BigDecimal(coupon.getValue())));
+                }
+            }
+
+        }
+        if (orderMapper.insert(tbOrder) != 1) {
+            throw new RuntimeException("插入错误");
+        }
+        if (orderItemMapper.insert(tbOrderItems) != 1) {
+            throw new RuntimeException("插入错误");
+        }
+        rabbitTemplate.convertAndSend("amq.direct", "yyds", tbOrder.getOrderId());
+        //orderid放入延时队列，五分钟后未支付则取消订单
+        return true;
     }
 }

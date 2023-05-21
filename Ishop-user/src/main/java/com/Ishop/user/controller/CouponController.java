@@ -29,6 +29,12 @@ public class CouponController {
         return  RestGenerator.successResult(couponService.getCoupon());
     }
 
+    @GetMapping("/getVoCoupon")
+    public RestBean getVoCoupon() {
+        return  RestGenerator.successResult(couponService.getVoCoupon());
+    }
+
+
 
 
 

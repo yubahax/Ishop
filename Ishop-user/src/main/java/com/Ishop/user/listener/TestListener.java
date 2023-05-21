@@ -1,9 +1,6 @@
-package com.Ishop.store.listener;
+package com.Ishop.user.listener;
 
-import com.Ishop.common.entity.TbCoupon;
-import com.Ishop.store.service.CouponService;
-import com.Ishop.store.service.ItemService;
-import com.Ishop.store.service.OrderService;
+import com.Ishop.user.service.CouponService;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
 
@@ -13,28 +10,13 @@ import javax.annotation.Resource;
 public class TestListener {
 
     @Resource
-    OrderService orderService;
-
-    @Resource
     CouponService couponService;
 
-    @Resource
-    ItemService itemService;
-    @RabbitListener(queues = "dl-yyds")
-    public void order(String id){
-        orderService.expireOrder(id);
+    @RabbitListener(queues = "coupon")
+    public void order(Long id){
+       couponService.delCoupon(id);
     }
 
-
-    @RabbitListener(queues = "dl-yyds",messageConverter = "jacksonConverter")
-    public void coupon(TbCoupon coupon){
-
-    }
-
-    @RabbitListener(queues = "dl-yyds",messageConverter = "jacksonConverter")
-    public void item(TbCoupon coupon){
-
-    }
 
 //        @RabbitListener(queues = "yuba",  containerFactory = "listenerContainer")
 //        public void receiver(String data){

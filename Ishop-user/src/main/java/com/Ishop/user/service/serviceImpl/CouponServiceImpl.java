@@ -8,6 +8,7 @@ import com.Ishop.common.util.util.ParamVail;
 import com.Ishop.common.util.util.RestBean;
 import com.Ishop.common.util.util.TimeUtil;
 import com.Ishop.common.util.util.Yedis;
+import com.Ishop.common.vo.VoCoupon;
 import com.Ishop.user.cache.CouponCache;
 import com.Ishop.user.client.CouponClient;
 import com.Ishop.user.mapper.CouponMapper;
@@ -19,6 +20,7 @@ import com.baomidou.mybatisplus.extension.conditions.update.UpdateChainWrapper;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
@@ -77,6 +79,31 @@ public class CouponServiceImpl implements CouponService {
         return j;
     }
 
+    @Override
+    public List<VoCoupon> getVoCoupon() {
+        List<TbUserCoupon> cidList = userCouponMapper.selectList(new QueryWrapper<TbUserCoupon>().eq("uid",yedis.getUser(yedis.getName()).getId()));
+        List<Long> ids = cidList.stream().map(TbUserCoupon::getCid).collect(Collectors.toList());
+        RestBean i = couponClient.getCouponByIdList(ids);
+        LinkedHashMap map = (LinkedHashMap) i.getData();
+        List<TbCoupon> j = (List<TbCoupon>)  map.get(0);
+        List<VoCoupon> list = new ArrayList<>();
+        for (TbUserCoupon userCoupon:cidList) {
+            TbCoupon tbCoupon = j.stream().filter(a->a.getId().equals(userCoupon.getCid())).collect(Collectors.toList()).get(0);
+            VoCoupon voCoupon = new VoCoupon();
+            voCoupon.setId(userCoupon.getId());
+            voCoupon.setLimitnum(tbCoupon.getLimitnum());
+            voCoupon.setType(tbCoupon.getType());
+            voCoupon.setValue(tbCoupon.getValue());
+            voCoupon.setCid(tbCoupon.getId());
+            list.add(voCoupon);
+        }
+        return list;
+    }
+
+    @Override
+    public void delCoupon(Long id) {
+        userCouponMapper.deleteById(id);
+    }
 
     public void delDeadCoupon(){
         List<TbUserCoupon> tbUserCoupons = userCouponMapper.selectList(new QueryWrapper<TbUserCoupon>());
