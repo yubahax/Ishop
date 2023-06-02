@@ -235,11 +235,13 @@ public class OrderServiceImpl implements OrderService {
         if (order.getStatus() == 1) {
             return true;
         }
+        //双重检查，若订单已经支付则不取消订单
         if (order.getShippingCode() != null) {
             rabbitTemplate.convertAndSend("cou.direct", "yuba", order.getShippingCode());
-            //删除购物卷
+            //在订单未提交之前购物卷是持续保存的，删除购物卷
         }
         return orderMapper.update(null,new UpdateWrapper<TbOrder>().set("status",2).eq("order_id",orderId)) == 1;
+        //修改订单支付状态
     }
     @Transactional(rollbackFor = RuntimeException.class)
     @Override

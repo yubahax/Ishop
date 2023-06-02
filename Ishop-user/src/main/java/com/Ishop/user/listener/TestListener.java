@@ -15,6 +15,9 @@ public class TestListener {
     @RabbitListener(queues = "coupon")
     public void order(Long id){
        couponService.delCoupon(id);
+        /**
+         * 订单超时取消，保留订单信息，order和orderitem，回滚购物卷
+         */
     }
 
 

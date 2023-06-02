@@ -3,9 +3,13 @@ package com.Ishop.store.service.serviceImpl;
 
 import com.Ishop.common.entity.TbCoupon;
 import com.Ishop.common.util.util.TimeUtil;
+import com.Ishop.common.util.util.Yedis;
+import com.Ishop.store.client.UserClient;
 import com.Ishop.store.mapper.CouponMapper;
 import com.Ishop.store.service.CouponService;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -20,6 +24,14 @@ public class CouponServiceImpl implements CouponService {
     CouponMapper couponMapper;
 
     private static final ReentrantLock LOCK = new ReentrantLock();
+    @Resource
+    RedissonClient redissonClient;
+
+    @Resource
+    Yedis yedis;
+
+    @Resource
+    UserClient userClient;
 
     @Override
     public List<TbCoupon> getCouponByIdList(List<Long> ids) {
@@ -28,6 +40,7 @@ public class CouponServiceImpl implements CouponService {
 
     @Override
     public TbCoupon addCoupon(Long id) {
+        redissonClient.getLock("couponlock");
         LOCK.lock();
         try {
             TbCoupon coupon = couponMapper.selectById(id);
@@ -41,6 +54,26 @@ public class CouponServiceImpl implements CouponService {
           LOCK.unlock();
         }
     }
+
+    @Override
+    public boolean maoAddCoupon(Long id) {
+        RLock rlock = redissonClient.getLock("couponlock");
+        if(!rlock.tryLock()) {
+            return false;
+        }
+        try {
+            int count = (int) yedis.get("coupon"+id);
+            if (count < 1){
+                return false;
+            }
+            yedis.set("coupon"+id,--count);
+            userClient.addCoupon(id);
+            return true;
+        } finally {
+            rlock.unlock();
+        }
+    }
+
 
     @Override
     public boolean delCoupon(Long id) {

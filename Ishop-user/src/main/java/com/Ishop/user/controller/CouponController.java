@@ -16,8 +16,8 @@ public class CouponController {
     @Resource
     CouponService couponService;
 
-    @GetMapping("/addCoupon/{cid}")
-    public RestBean addCoupon (@PathVariable Long cid) {
+    @GetMapping("/addCoupon")
+    public RestBean addCoupon (@RequestParam("cid") Long cid) {
         if (!ParamVail.vailNumber(Math.toIntExact(cid))) {
             return RestGenerator.errorResult("非法参数");
         }
