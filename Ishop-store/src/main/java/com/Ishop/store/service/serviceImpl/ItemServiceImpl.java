@@ -13,6 +13,7 @@ import com.Ishop.store.service.ItemService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.redisson.RedissonBloomFilter;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -26,6 +27,9 @@ public class ItemServiceImpl implements ItemService {
     ItemMapper itemMapper;
     @Resource
     ItemDescMapper itemDescMapper;
+
+    @Resource
+    RedissonBloomFilter<Integer> rBloomFilter;
 
     @Resource
     Yedis yedis;
@@ -99,13 +103,12 @@ public class ItemServiceImpl implements ItemService {
         tbItem.setCreated(TimeUtil.getTime());
         tbItem.setUpdated(TimeUtil.getTime());
         boolean flag = itemMapper.insert(tbItem) == 1;
-
+        rBloomFilter.add(Math.toIntExact(tbItem.getId()));
         return flag;
     }
 
     @Override
     public boolean updateStatus(int id,int status) {
-
         UpdateWrapper<TbItem> tbItemUpdateWrapper = new UpdateWrapper<>();
         tbItemUpdateWrapper
                 .eq("id",id)
@@ -115,27 +118,24 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public boolean delItem(int id) {
-
         return (itemMapper.deleteById(id)>=1);
     }
 
     @Override
     public boolean delItemList(List<Integer> ids) {
-
         return (itemMapper.deleteBatchIds(ids)>=1);
     }
 
     @Override
     public boolean updateItem(TbItem tbItem) {
-
         return ((itemMapper.updateById(tbItem))>=1);
     }
 
-//    @PostConstruct
-//    public void initItemBloom() {
-//        List<TbItem> tbItems  = itemMapper.selectList(new QueryWrapper<TbItem>().select("id"));
-//        tbItems.forEach(a -> yedis.addByBloomFilter(bloomFilterHelper,ITEM_NAME,a.getId()));
-//    }
+    @PostConstruct
+    public void initItemBloom() {
+        List<TbItem> tbItems  = itemMapper.selectList(new QueryWrapper<TbItem>().select("id"));
+        tbItems.forEach(a -> rBloomFilter.add(Math.toIntExact(a.getId())));
+    }
 //
 //    @Scheduled(cron = "0 0 12 ? * 4")
 //    public void reflushItemBloom() {

@@ -5,6 +5,7 @@ import com.Ishop.common.entity.TbItem;
 import com.Ishop.common.util.util.*;
 import com.Ishop.common.vo.Product;
 import com.Ishop.store.service.ItemService;
+import org.redisson.RedissonBloomFilter;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -13,12 +14,10 @@ import java.util.List;
 @RestController
 @RequestMapping("/item")
 public class ItemController {
-
     @Resource
     ItemService itemService;
-
-
-
+    @Resource
+    RedissonBloomFilter<Integer> rBloomFilter;
     private static final String ITEM_NAME = "bitem";
 
     @GetMapping("/getAllItem")
@@ -45,7 +44,7 @@ public class ItemController {
 
     @GetMapping("/getItemDesc")
     public RestBean getItem(@RequestParam("itemId") int itemId){
-        if(!ParamVail.vailNumber(itemId)){
+        if(!ParamVail.vailNumber(itemId) || !rBloomFilter.contains(itemId)){
             return RestGenerator.errorResult("非法参数");
         }
         Product product = itemService.getItemDesc(itemId);
@@ -63,7 +62,7 @@ public class ItemController {
     @PostMapping ("/updateStatus")
     public RestBean updateStatus(@RequestParam("id") int id,
                                  @RequestParam("status") int status){
-        if(!ParamVail.vailNumber(id,status)){
+        if(!ParamVail.vailNumber(id,status) || !rBloomFilter.contains(id)){
             return RestGenerator.errorResult("非法参数");
         }
         return itemService.updateStatus(id,status)?RestGenerator.successResult("发布成功"):RestGenerator.errorResult("发布失败");
@@ -72,7 +71,7 @@ public class ItemController {
 
     @PostMapping("/delItem")
     public RestBean delItem(@RequestParam("id")int id){
-        if(!ParamVail.vailNumber(id)){
+        if(!ParamVail.vailNumber(id) || !rBloomFilter.contains(id)){
             return RestGenerator.errorResult("非法参数");
         }
         return itemService.delItem(id)?RestGenerator.successResult("删除成功"):RestGenerator.errorResult("删除失败");
@@ -80,6 +79,11 @@ public class ItemController {
 
     @PostMapping("/delItemList")
     public RestBean delItemList(@RequestParam("ids") List<Integer> ids){
+        for (int tid:ids){
+            if (!rBloomFilter.contains(tid)){
+                return RestGenerator.errorResult("非法参数");
+            }
+        }
         if(ParamVail.isNull(ids)){
             return RestGenerator.errorResult("非法参数");
         }

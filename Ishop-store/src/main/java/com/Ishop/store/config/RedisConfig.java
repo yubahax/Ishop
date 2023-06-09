@@ -34,8 +34,8 @@ public class RedisConfig{
     }
 
     @Bean
-    public RBloomFilter<String> rBloomFilter() {
-        RBloomFilter<String> bloomFilter = redissonClient().getBloomFilter("storeList");
+    public RBloomFilter<Integer> rBloomFilter() {
+        RBloomFilter<Integer> bloomFilter = redissonClient().getBloomFilter("storeList");
         bloomFilter.tryInit(100000000L,0.03);
         return bloomFilter;
     }
